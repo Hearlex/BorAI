@@ -1,0 +1,7 @@
+*.log
+memory.txt
+*.pyc
+sha.py
+.env
+test.py
+_old/
