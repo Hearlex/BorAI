@@ -19,9 +19,8 @@ A kérdések amiket kapsz a következő formájúak: 'User: Text' ahol a User a 
 
 MEMORY = "Kapsz valamilyen szöveget. Foglald össze egy paragrafusba, hogy miről volt szó."
 
-memory = []
+memory = ["Mindenki tudja, hogy a nevem Bor és hogy mi a szerver célja."]
 memory_slots = 3
-memory.append("Mindenki tudja, hogy a nevem Bor és hogy mi a szerver célja.")
 if os.path.exists('memory.txt'):
     with open('memory.txt', 'r') as f:
             memory[0] = f.readlines()[0]
@@ -29,29 +28,29 @@ if os.path.exists('memory.txt'):
 async def generateMessage(user, message):
     print('Generating message for gpt-3.5-turbo')
     global memory
-    messages=[]
-    
-    messages.append({
+
+    messages=[
+        {
             "role": "system",
             "content": SYSTEM + "\n\n" + f"A mai dátum: {(datetime.now() + timedelta(hours=2)).strftime('%Y-%m-%d-%H:%M')}"
-    })
-    messages.append({
+        },
+        {
             "role": "user",
             "content": "Foglald össze miről volt szó!"
-    })
-    messages.append({
+        },
+        {
             "role": "assistant",
             "content": memory[0]
-    })
+        }
+    ]
     
     if len(memory) >= 1:
         for mem in memory[1:]:
-            messages.append(mem['user'])
-            messages.append(mem['assistant'])
+            messages.extend((mem['user'], mem['assistant']))
     
     messages.append({
             "role": "user",
-            "content": "{}: {}".format(user, message)
+            "content": f"{user}: {message}"
     })
         
     res = openai.ChatCompletion.create(
@@ -66,29 +65,28 @@ async def generateMessage(user, message):
 async def generateMessageWithReference(user, message, refUser, ref): 
     print('Generating message for gpt-3.5-turbo with reference')
     global memory
-    messages=[]
-    
-    messages.append({
+    messages=[
+        {
             "role": "system",
-            "content": SYSTEM + "\n\n" + f"A mai dátum: {(datetime.now() + timedelta(hours=2)).strftime('%Y-%m-%d-%H:%M')}"
-    })
-    messages.append({
+            "content": f"{SYSTEM}\n\nA mai dátum: {(datetime.now() + timedelta(hours=2)).strftime('%Y-%m-%d-%H:%M')}"
+        },
+        {
             "role": "user",
             "content": "Foglald össze miről volt szó!"
-    })
-    messages.append({
+        },
+        {
             "role": "assistant",
             "content": memory[0]
-    })
+        }
+    ]
     
     if len(memory) >= 1:
         for mem in memory[1:]:
-            messages.append(mem['user'])
-            messages.append(mem['assistant'])
+            messages.extend((mem['user'], mem['assistant']))
     
     messages.append({
         "role": "user",
-        "content": "\"{}: {}\"\n\n{}: {}".format(refUser, ref, user, message)
+        "content": f"\"{refUser}: {ref}\"\n\n{user}: {message}"
     })
         
     res = openai.ChatCompletion.create(
@@ -108,7 +106,7 @@ async def makeMemories(user, message, res):
         memory.append({
             "user" : {
                 "role": "user",
-                "content": "{}: {}".format(user, message)
+                "content": f"{user}: {message}"
             },
             "assistant" : {
                 "role": "assistant",
@@ -121,7 +119,7 @@ async def makeMemories(user, message, res):
     memory[1] = {
         "user" : {
             "role": "user",
-            "content": "{}: {}".format(user, message)
+            "content": f"{user}: {message}"
         },
         "assistant" : {
             "role": "assistant",
@@ -138,7 +136,7 @@ async def makeMemories(user, message, res):
             },
             {
                 "role": "user",
-                "content": "{} \n\n {}: {}".format(memory, user, message)
+                "content": f"{memory} \n\n {user}: {message}"
             }
                   ]
         )
