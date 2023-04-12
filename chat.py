@@ -15,8 +15,9 @@ class ChatModule():
         try:
             answerable_reference = False
             if message.reference is not None:
+                print('Reference found')
                 ref_msg = await message.channel.fetch_message(message.reference.message_id)
-                if ref_msg.author == 'Egy Pohár Bor':
+                if ref_msg.author.id == self.bot.user.id:
                     answerable_reference = True
                     
             if ('Bor' in message.content or answerable_reference) and message.channel.name != 'Bor Change Log':
