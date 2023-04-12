@@ -23,7 +23,7 @@ class ChatModule():
             if ('Bor' in message.content or answerable_reference) and message.channel.name != 'Bor Change Log':
                 intents, options = self.intentDetection(message)
                 
-                print("Intents: {}".format(intents))
+                print(f"Intents: {intents}")
                 
                 async with message.channel.typing():
                     text, memoryTask = None, None
@@ -52,8 +52,8 @@ class ChatModule():
             if message.content.startswith('['):
                 options = json.loads('{'+message.content[1:(message.content.rfind(']'))]+'}')
                 
-            if any([gword in message.content.lower() for gword in ['draw', 'generate', 'generálj', 'generálnál', 'generáld', 'rajzolj', 'rajzold', 'képet']]): intents.append('imagegen')
-            if any([gword in message.content.lower() for gword in ['remind', 'emlékeztess', 'emlékeztetőt', 'szólni', 'szólj']]): intents.append('reminder')
+            if any(gword in message.content.lower() for gword in ['draw', 'generate', 'generálj', 'generálnál', 'generáld', 'rajzolj', 'rajzold', 'képet']): intents.append('imagegen')
+            if any(gword in message.content.lower() for gword in ['remind', 'emlékeztess', 'emlékeztetőt', 'szólni', 'szólj']): intents.append('reminder')
         except Exception as e:
             print(e)
             print('{'+message.content[1:(message.content.index(']'))]+'}')

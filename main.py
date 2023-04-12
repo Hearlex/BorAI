@@ -39,7 +39,7 @@ async def createimage(ctx, prompt: discord.Option(str, description='the prompt f
     jsonoptions = json.loads(options)
     ctx.respond(f'Generating Image with prompt: {prompt} and options: {jsonoptions}')
     imgPaths = await img.createImage(prompt, jsonoptions)
-    for i, path in enumerate(imgPaths):
+    for path in imgPaths:
         if os.path.exists(path):
             await ctx.channel.send(file=discord.File(path))
             os.remove(path)
