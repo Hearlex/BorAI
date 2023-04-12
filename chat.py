@@ -13,7 +13,13 @@ class ChatModule():
     async def messageLogic(self, message):
         print('Entered Message Logic')
         try:
-            if ('Bor' in message.content or (message.reference is not None and message.channel.fetch_message(message.reference.message_id).author == 'Egy Pohár Bor')) and message.channel.name != 'Bor Change Log':
+            answerable_reference = False
+            if message.reference is not None:
+                ref_msg = await message.channel.fetch_message(message.reference.message_id)
+                if ref_msg.author == 'Egy Pohár Bor':
+                    answerable_reference = True
+                    
+            if ('Bor' in message.content or answerable_reference) and message.channel.name != 'Bor Change Log':
                 intents, options = self.intentDetection(message)
                 
                 print("Intents: {}".format(intents))
