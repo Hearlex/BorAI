@@ -3,6 +3,7 @@ import asyncio
 import json
 import random
 from gpt import generateMessage, generateMessageWithReference
+from lchain import bor_power_mode
 
 class ChatModule():
     errorMessages = ['Hmm... 🤔', 'Hát figyelj én nem tudom', 'Fogalmam sincs mit akarsz', 'Mivan?', 'Bruh', '💀', 'lol', 'Tesó mi lenne ha nem?', '🤡', 'Bocs én ezt nem', 'Nekem elveim is vannak azért', 'Nézd... ez nem működik', 'Mi lenne ha csak barátokként folytatnánk?', "Sprechen sie deutsch?", 'Megtudnád ismételni?', 'Nem értem', 'Szerintem ezt ne is próbáld meg újra', 'Anyád tudja hogy miket művelsz itt?']
@@ -26,13 +27,21 @@ class ChatModule():
                 print(f"Intents: {intents}")
                 
                 async with message.channel.typing():
-                    text, memoryTask = None, None
-                    if message.reference is not None:
-                        text, memoryTask = await generateMessageWithReference(message.author.name, message.content, message.reference.resolved.author.name, message.reference.resolved.content)
+                    if 'imagegen' in intents:
+                        pass
+                    elif 'search' in intents and 'search' in [r.name.lower() for r in message.author.roles]:
+                        answer, cost, eng_prompt = await bor_power_mode(message.content)
+                        await self.sendChat(message, f"*Átfogalmazott keresési kifejezés: {eng_prompt}*")
+                        await self.sendChat(message, answer)
+                        await self.sendChat(message, f"*A keresési eredmények költsége: {cost} Ft*")
                     else:
-                        text, memoryTask = await generateMessage(message.author.name, message.content)
-                    text = text.choices[0].message.content
-                    await asyncio.gather(self.sendChat(message, text), memoryTask)
+                        text, memoryTask = None, None
+                        if message.reference is not None:
+                            text, memoryTask = await generateMessageWithReference(message.author.name, message.content, message.reference.resolved.author.name, message.reference.resolved.content)
+                        else:
+                            text, memoryTask = await generateMessage(message.author.name, message.content)
+                        text = text.choices[0].message.content
+                        await asyncio.gather(self.sendChat(message, text), memoryTask)
         except Exception as e:
             raise Exception(e)
                             
@@ -54,6 +63,7 @@ class ChatModule():
                 
             if any(gword in message.content.lower() for gword in ['draw', 'generate', 'generálj', 'generálnál', 'generáld', 'rajzolj', 'rajzold', 'képet']): intents.append('imagegen')
             if any(gword in message.content.lower() for gword in ['remind', 'emlékeztess', 'emlékeztetőt', 'szólni', 'szólj']): intents.append('reminder')
+            if any(gword in message.content.lower() for gword in ['search', 'keress', 'keresni', 'keresés', 'keresést', 'keresnéd', 'nézz', 'futtasd', 'futtass']): intents.append('search')
         except Exception as e:
             print(e)
             print('{'+message.content[1:(message.content.index(']'))]+'}')

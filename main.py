@@ -19,9 +19,7 @@ async def on_ready():
 
 @bot.listen('on_message')
 async def on_message(message):
-    print('Message received')
     try:
-        print('Content: ',message.content)
         if message.author == bot.user:
             return
 

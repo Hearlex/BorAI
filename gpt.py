@@ -19,11 +19,48 @@ A kérdések amiket kapsz a következő formájúak: 'user: message' ahol a user
 
 MEMORY = "Kapsz valamilyen szöveget. Foglald össze egy paragrafusba, hogy miről volt szó."
 
+GETQUESTION = "You will get a question from a conversation. Summarize the question in english."
+TRANSLATEHU = "Translate the text from english to hungarian."
+
 memory = ["Mindenki tudja, hogy a nevem Bor és hogy mi a szerver célja."]
 memory_slots = 3
 if os.path.exists('memory.txt'):
     with open('memory.txt', 'r') as f:
             memory[0] = f.readlines()[0]
+
+async def translateHU(message):
+    res = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                'role': 'system',
+                'content': TRANSLATEHU
+            },
+            {
+                'role': 'user',
+                'content': message
+            }
+        ]
+    )
+    
+    return res.choices[0].message.content
+
+async def getQuestion(message):
+    res = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                'role': 'system',
+                'content': GETQUESTION
+            },
+            {
+                'role': 'user',
+                'content': message
+            }
+        ]
+    )
+    
+    return res.choices[0].message.content
 
 async def generateMessage(user, message):
     print('Generating message for gpt-3.5-turbo')
