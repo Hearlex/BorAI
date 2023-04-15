@@ -10,13 +10,14 @@ from langchain.agents import Tool, initialize_agent, AgentType, load_tools
 from langchain.memory import ConversationSummaryBufferMemory, ConversationBufferWindowMemory
 from langchain.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate
 from langchain.chains import SimpleSequentialChain
-from langchain.utilities import PythonREPL, WikipediaAPIWrapper
+from langchain.utilities import PythonREPL, WikipediaAPIWrapper, GoogleSearchAPIWrapper
 from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
 from langchain.utilities.bash import BashProcess
 import sys
 from langchain.callbacks.base import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from gpt import getQuestion, translateHU
+import asyncio
 load_dotenv()
 
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
@@ -48,12 +49,13 @@ chatgpt = ChatOpenAI()
 #llama = LlamaCpp(model_path=".models/ggml-vicuna-7b-1.1-q4_0.bin")
 huggingLLM = HuggingFaceHub(repo_id="EleutherAI/gpt-j-6b", model_kwargs={"temperature": 0.7, "max_length": 100})
 
-tools = load_tools(["open-meteo-api", "news-api", "tmdb-api"], llm=chatgpt,
-                   news_api_key=os.getenv('NEWS_API_KEY'), tmdb_bearer_token=os.getenv('TMDB_BEARER_TOKEN') )
+tools = load_tools(["news-api"], llm=chatgpt,
+                   news_api_key=os.getenv('NEWS_API_KEY') )
 
 python_repl = PythonREPL()
 wolfram = WolframAlphaAPIWrapper()
 wikipedia = WikipediaAPIWrapper()
+search = GoogleSearchAPIWrapper(k=5)
 
 tools.extend([
     Tool(
@@ -75,6 +77,11 @@ tools.extend([
         name="Wikipedia",
         func=wikipedia.run,
         description="Useful for when you need to answer questions about history, geography, and culture. Input should be a search query."
+    ),
+    Tool(
+        name="google-search",
+        func=search.run,
+        description="Whenever you need to find an answer you cannot find anywhere else, use this tool. Input should be a search query."
     )
 ])
 
@@ -99,7 +106,8 @@ async def bor_power_mode(prompt):
         
         return result, callback.total_cost*USD_TO_HUF, eng_prompt
 
+
 if __name__ == "__main__":
     with get_openai_callback() as callback:
         print(sys.argv[1])
-        bor_power_mode(sys.argv[1])
+        asyncio.run(bor_power_mode(sys.argv[1]))
