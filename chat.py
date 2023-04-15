@@ -31,9 +31,8 @@ class ChatModule():
                         pass
                     elif 'search' in intents and 'search' in [r.name.lower() for r in message.author.roles]:
                         answer, cost, eng_prompt = await bor_power_mode(message.content)
-                        await self.sendChat(message, f"*Átfogalmazott keresési kifejezés: {eng_prompt}*")
                         await self.sendChat(message, answer)
-                        await self.sendChat(message, f"*A keresési eredmények költsége: {cost} Ft*")
+                        await self.sendChat(message, f"||*Átfogalmazott keresési kifejezés: {eng_prompt}\nA keresési eredmények költsége: {cost} Ft*||")
                     else:
                         text, memoryTask = None, None
                         if message.reference is not None:
@@ -63,7 +62,7 @@ class ChatModule():
                 
             if any(gword in message.content.lower() for gword in ['draw', 'generate', 'generálj', 'generálnál', 'generáld', 'rajzolj', 'rajzold', 'képet']): intents.append('imagegen')
             if any(gword in message.content.lower() for gword in ['remind', 'emlékeztess', 'emlékeztetőt', 'szólni', 'szólj']): intents.append('reminder')
-            if any(gword in message.content.lower() for gword in ['search', 'keress', 'keresni', 'keresés', 'keresést', 'keresnéd', 'nézz', 'futtasd', 'futtass']): intents.append('search')
+            if any(gword in message.content.lower() for gword in ['search', 'keress', 'keresni', 'keresés', 'keresést', 'keresnéd', 'keresnél', 'nézz', 'futtasd', 'futtass']): intents.append('search')
         except Exception as e:
             print(e)
             print('{'+message.content[1:(message.content.index(']'))]+'}')
