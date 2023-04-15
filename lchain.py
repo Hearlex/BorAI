@@ -3,11 +3,8 @@ from dotenv import load_dotenv
 from langchain import LLMChain, HuggingFaceHub
 from langchain.llms import GPT4All, LlamaCpp
 from langchain.chat_models import ChatOpenAI
-from langchain.schema import (
-    AIMessage,
-    HumanMessage,
-    SystemMessage
-)
+from langchain.schema import AIMessage, HumanMessage, SystemMessage
+
 from langchain.callbacks import get_openai_callback
 from langchain.agents import Tool, initialize_agent, AgentType, load_tools
 from langchain.memory import ConversationSummaryBufferMemory, ConversationBufferWindowMemory
@@ -19,11 +16,9 @@ from langchain.utilities.bash import BashProcess
 import sys
 from langchain.callbacks.base import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-import deepl
 from gpt import getQuestion, translateHU
 load_dotenv()
 
-translator = deepl.Translator(os.getenv('DEEPL_AUTH_KEY'))
 callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 previous_summary = ""
 
