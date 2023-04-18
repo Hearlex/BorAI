@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from langchain import LLMChain, HuggingFaceHub
-from langchain.llms import GPT4All, LlamaCpp
+from langchain.llms import GPT4All, LlamaCpp, NLPCloud
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 
@@ -42,11 +42,10 @@ human_message_prompt = HumanMessagePromptTemplate.from_template("{message}")
 chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt]) """
 
 
-#local_path = './models/gpt4all-converted.bin'
+
 memory = ConversationBufferWindowMemory(memory_key="chat_history", return_messages=True, k=2)
 chatgpt = ChatOpenAI()
-#gtp4all = GPT4All(model=local_path, callback_manager=callback_manager, verbose=True)
-#llama = LlamaCpp(model_path=".models/ggml-vicuna-7b-1.1-q4_0.bin")
+nlpcloud = NLPCloud()
 huggingLLM = HuggingFaceHub(repo_id="EleutherAI/gpt-j-6b", model_kwargs={"temperature": 0.7, "max_length": 100})
 
 tools = load_tools(["news-api"], llm=chatgpt,
