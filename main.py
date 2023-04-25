@@ -6,12 +6,14 @@ import asyncio
 import random
 from img import ImgModule
 import json
+from voice import VoiceModule
 
 load_dotenv()
 token = os.getenv('BOT_TOKEN')
 bot = discord.Bot(intents=discord.Intents.all())
 chat = ChatModule(bot)
 img = ImgModule(bot)
+voice = VoiceModule(bot)
 
 @bot.event
 async def on_ready():
@@ -41,6 +43,21 @@ async def createimage(ctx, prompt: discord.Option(str, description='the prompt f
         if os.path.exists(path):
             await ctx.channel.send(file=discord.File(path))
             os.remove(path)
-    
+
+@bot.command(description='join voice channel')
+async def join(ctx):
+    await voice.join(ctx)
+
+@bot.command(description='leave voice channel')
+async def leave(ctx):
+    await voice.leave(ctx)
+
+@bot.command(description='start recording')
+async def startrec(ctx):
+    await voice.record(ctx)
+
+@bot.command(description='stop recording')
+async def stoprec(ctx):
+    await voice.stopRecording(ctx)
 
 bot.run(token)
