@@ -21,10 +21,18 @@ bor = initialize_agent(llm=llm, tools=tools, agent=AgentType.OPENAI_MULTI_FUNCTI
 if __name__ == "__main__":
     with get_openai_callback() as callback:
         print(sys.argv[1])
-        question = getQuestion(sys.argv[1])
+        try:
+            question = getQuestion(sys.argv[1])
+        except:
+            question = sys.argv[1]
+        
         
         answer = bor.run(question)
-        print(translateHU(answer))
+        
+        try:
+            print(translateHU(answer))
+        except:
+            print(answer)
         
     print(f"Total Tokens: {callback.total_tokens}")
     print(f"API call costs: ${callback.total_cost} - {callback.total_cost*340} Ft")
