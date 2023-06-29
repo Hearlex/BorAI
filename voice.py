@@ -5,17 +5,19 @@ import socket
 import select
 import asyncio
 import threading
-
-""" stt = Whisper.from_pretrained("large")
-stt.params.with_language("hu") """
+import numpy as np
+from time import sleep
 
 class VoiceModule():
     def __init__(self, bot):
         self.bot = bot
         self.connections = {}
         self.decoder = None
+        self.stt = Whisper.from_pretrained("large")
+        self.stt.params.with_language("hu")
         
         self.f = None
+        self.data = np.zeros(shape=(0))
         
     async def join(self, ctx):
         if ctx.author.voice is None:
@@ -30,8 +32,7 @@ class VoiceModule():
     async def leave(self, ctx):
         await self.connections[ctx.guild.id].disconnect()
         await ctx.respond("Left voice channel")
-        
-        
+    
     async def record(self, ctx):
         vc = self.connections[ctx.guild.id]
         self.connections[f'{ctx.guild.id}isRec'] = True
@@ -45,6 +46,10 @@ class VoiceModule():
         threading.Thread(
             target=self.recv_audio,
             args=(vc,ctx)
+        ).start()
+        threading.Thread(
+            target=self.transcribe,
+            args=(ctx,)
         ).start()
     
     def recv_audio(self, vc, ctx):
@@ -68,6 +73,8 @@ class VoiceModule():
         dec_data = data.decoded_data
         if dec_data is not None:
             self.f.writeframes(dec_data)
+            y = np.frombuffer(data, np.int16).flatten().astype(np.float32) / 32768.0
+            self.data = np.concatenate((self.data, y))
     
     # This is a modified version of the original function from pycord
     def unpack_audio(self, data, vc):
@@ -102,3 +109,13 @@ class VoiceModule():
         self.decoder.stop()
         await ctx.respond("Stopped recording")
         self.f.close()
+    
+    def transcribe(self, ctx):
+        timer = 0
+        while self.connections[f'{ctx.guild.id}isRec']:
+            sleep(1)
+            if timer % 3 == 0:
+                print(self.stt.transcribe(self.data))
+            timer += 1
+        print(self.data)
+            
