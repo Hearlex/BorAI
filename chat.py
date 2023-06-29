@@ -54,7 +54,7 @@ class ChatModule():
                             cprint(f"Reference message: {ref_msg.content}", 'light_yellow')
                         cprint(f"Question: {question}", 'yellow')
                         
-                        answer = bor.run(question) if not answerable_reference else bor.run(f'"{ref_msg}"\n\n{question}')
+                        answer = bor.run(question) if not answerable_reference else bor.run(f'"{ref_msg.content}"\n\n{question}')
                         
                         await self.sendChat(message, answer)
                         
