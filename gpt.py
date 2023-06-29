@@ -4,6 +4,13 @@ import os
 from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
+from langchain import LLMChain
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+)
 
 load_dotenv()
 openai.api_key = os.getenv('OPENAI_API_KEY')
@@ -63,7 +70,17 @@ def getQuestion(message):
     
     return res.choices[0].message.content
 
-async def generateMessage(user, message):
+def generatePrompt(message):
+    system_message_prompt = SystemMessagePromptTemplate.from_template(SYSTEM)
+    human_message_prompt = HumanMessagePromptTemplate.from_template(message)
+    chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
+    return chat_prompt
+
+def generateSystemPrompt():
+    system_message_prompt = SystemMessagePromptTemplate.from_template(SYSTEM)
+    return SYSTEM
+
+""" async def generateMessage(user, message):
     print('Generating message for gpt-3.5-turbo')
     global memory
 
@@ -134,7 +151,7 @@ async def generateMessageWithReference(user, message, refUser, ref):
     
     print(res)
     task = asyncio.create_task(makeMemories(user, message, res.choices[0].message.content))
-    return res, task
+    return res, task """
 
 async def makeMemories(user, message, res):
     print('Making memories')

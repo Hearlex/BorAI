@@ -8,49 +8,33 @@ from langchain.utilities import PythonREPL, WikipediaAPIWrapper, GoogleSearchAPI
 from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
 from langchain.utilities.bash import BashProcess
 import sys
-from gpt import getQuestion, translateHU
 import asyncio
 load_dotenv()
 
-
-previous_summary = ""
-
-USD_TO_HUF = 340
-
 llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613")
-
-
-tools = load_tools(["news-api"], llm=llm,
-                   news_api_key=os.getenv('NEWS_API_KEY') )
 
 python_repl = PythonREPL()
 wolfram = WolframAlphaAPIWrapper()
 wikipedia = WikipediaAPIWrapper()
 search = GoogleSearchAPIWrapper(k=5)
 
-tools.extend([
-    Tool(
-        name="python_repl",
-        func=python_repl.run,
-        description="A Python shell. Whenever there is python code in the message, run it and return the output if there is any.",
-    ),
+tools = [
     Tool(
         name="wolfram-alpha",
         func=wolfram.run,
-        description="useful for when you need to answer questions about math, science, and culture",
+        description="Hasznos amikor tudományos, matematikai, vagy fizikai kérdésekre kell választ kapnod. A bemenet egy keresési kifejezés.",
     ),
     Tool(
         name="Wikipedia",
         func=wikipedia.run,
-        description="Useful for when you need to answer questions about history, geography, and culture. Input should be a search query."
+        description="Hasznos amikor történelmi, ismeretterjesztő vagy kultúrális kérdésekre kell választ kapnod. A bemenet egy keresési kifejezés."
     ),
     Tool(
         name="google-search",
         func=search.run,
-        description="Whenever you need to find an answer you cannot find anywhere else, use this tool. Input should be a search query."
+        description="Amikor nincs más válasz, akkor itt biztosan találsz. A bemenet egy keresési kifejezés."
     )
-])
-
+]
 
 power_bor = initialize_agent(llm=llm, tools=tools, agent=AgentType.OPENAI_MULTI_FUNCTIONS, verbose=True)
 
