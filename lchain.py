@@ -1,4 +1,3 @@
-import os
 from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
 
@@ -6,7 +5,6 @@ from langchain.callbacks import get_openai_callback
 from langchain.agents import Tool, initialize_agent, AgentType, load_tools
 from langchain.utilities import PythonREPL, WikipediaAPIWrapper, GoogleSearchAPIWrapper
 from langchain.utilities.wolfram_alpha import WolframAlphaAPIWrapper
-from langchain.utilities.bash import BashProcess
 import sys
 import asyncio
 load_dotenv()
@@ -39,9 +37,7 @@ tools = [
 power_bor = initialize_agent(llm=llm, tools=tools, agent=AgentType.OPENAI_MULTI_FUNCTIONS, verbose=True)
 
 def bor_power_mode(prompt):
-    result = power_bor.run(prompt)
-    
-    return result
+    return power_bor.run(prompt)
 
 
 if __name__ == "__main__":

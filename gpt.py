@@ -1,11 +1,6 @@
 import openai
-import asyncio
-import os
-from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
-from langchain import LLMChain
-from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import (
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
@@ -73,8 +68,9 @@ def getQuestion(message):
 def generatePrompt(message):
     system_message_prompt = SystemMessagePromptTemplate.from_template(SYSTEM)
     human_message_prompt = HumanMessagePromptTemplate.from_template(message)
-    chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
-    return chat_prompt
+    return ChatPromptTemplate.from_messages(
+        [system_message_prompt, human_message_prompt]
+    )
 
 def generateSystemPrompt():
     system_message_prompt = SystemMessagePromptTemplate.from_template(SYSTEM)
