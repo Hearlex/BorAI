@@ -1,16 +1,11 @@
-import discord
-import asyncio
-import json
-import random
 from termcolor import cprint
 from lchain import bor_power_mode
+from error import MessageError
 
 from langchain.agents import initialize_agent, Tool, AgentType
 from langchain.chat_models import ChatOpenAI
 from langchain.callbacks import get_openai_callback
 from langchain.schema import SystemMessage
-import sys
-import asyncio
 from gpt import getQuestion, translateHU, generatePrompt, generateSystemPrompt
 
 from lchain import bor_power_mode
@@ -54,7 +49,7 @@ class ChatModule():
                             cprint(f"Reference message: {ref_msg.content}", 'light_yellow')
                         cprint(f"Question: {question}", 'yellow')
                         
-                        answer = bor.run(question) if not answerable_reference else bor.run(f'"{ref_msg.content}"\n\n{question}')
+                        answer = bor.run(f'"{ref_msg.content}"\n\n{question}') if answerable_reference else bor.run(question)
                         
                         await self.sendChat(message, answer)
                         
@@ -62,7 +57,7 @@ class ChatModule():
                     print(f"API call costs: ${callback.total_cost} - {callback.total_cost*340} Ft")
                     
         except Exception as e:
-            raise Exception(e)
+            raise MessageError(e) from e
                             
     async def sendChat(self, message, text):
         print('Sending chat')

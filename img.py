@@ -7,13 +7,10 @@ class ImgModule():
         
     async def createImage(self, prompt, options):
         try:
-            if 'size' in options.keys() and 'anime' in options.keys():
-                return await generateImage(prompt, size=(options['size']), anime=True)
-            elif 'size' in options.keys():
-                return await generateImage(prompt, size=(options['size']))
-            elif 'anime' in options.keys():
-                return await generateImage(prompt, anime=True)
-            else:
-                return await generateImage(prompt)
+            keys = options.keys()
+            img_size = options['size'] if 'size' in keys else (512, 512)
+            img_anime = 'anime' in keys
+
+            return await generateImage(prompt, size=img_size, anime=img_anime)
         except Exception as e:
             raise e

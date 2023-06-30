@@ -16,8 +16,8 @@ async def generateImage(prompt, size=(512, 512), anime=False):
 
     # Set the headers for the request
     headers = {
-    "Content-Type": "application/json",
-    "Authorization": runpod_api
+        "Content-Type": "application/json",
+        "Authorization": runpod_api
     }
 
     # Define your inputs
