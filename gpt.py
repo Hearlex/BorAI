@@ -24,12 +24,68 @@ MEMORY = "Kapsz valamilyen szöveget. Foglald össze egy paragrafusba, hogy mir�
 GETQUESTION = "You will get a message from a conversation. Translate the text to english."
 TRANSLATEHU = "Translate the text from english to hungarian."
 
+IMAGE = "Translate the text to english then transform the given text to image generation prompt. Only english answers are acceptable."
+
 memory = ["Mindenki tudja, hogy a nevem Bor és hogy mi a szerver célja."]
 memory_slots = 3
 if os.path.exists('memory.txt'):
     with open('memory.txt', 'r') as f:
             memory[0] = f.readlines()[0]
 
+
+async def generateImagePrompt(message): 
+    global memory
+    messages=[]
+    
+    messages.append({
+            "role": "system",
+            "content": IMAGE
+    })
+    messages.append({
+            "role": "user",
+            "content": "Kérlek generálj egy olyan képet amin egy varázskönyv található a katakombákban. A kép fantasy stílusu legyen."
+    })
+    messages.append({
+            "role": "assistant",
+            "content": "mdjrny-v4 style, magic spell book sitting on a table in the catacombs, hypermaximalist, insanely detailed and intricate, octane render, unreal engine, 8k, by greg rutkowski and Peter Mohrbacher and magali villeneuve"
+    })
+    messages.append({
+            "role": "user",
+            "content": "Bor, Egy olyan Cyborg karaktert kell hogy generálj, akinek az egész teste félig ember és félig steampunk robot."
+    })
+    messages.append({
+            "role": "assistant",
+            "content": "full body cyborg| full-length portrait| detailed face| symmetric| steampunk| cyberpunk| cyborg| intricate detailed| to scale| hyperrealistic| cinematic lighting| digital art| concept art| mdjrny-v4 style"
+    })
+    messages.append({
+            "role": "user",
+            "content": "Bor, generálj egy képet amin óriás gombák vannak és az egész egy tündérmesébe illeszkedik"
+    })
+    messages.append({
+            "role": "assistant",
+            "content": "painting of a fairy forest, dream light, full of colors, mushroom tree, dim light, super detailed, unreal engine 5, hdr, 12k, by Vincent Van Goth"
+    })
+    messages.append({
+            "role": "user",
+            "content": "Készíts egy képet amin Elsa található a Frozen filmből."
+    })
+    messages.append({
+            "role": "assistant",
+            "content": "Elsa, d & d, fantasy, intricate, elegant, highly detailed, digital painting, artstation, concept art, matte, sharp focus, illustration, hearthstone, art by artgerm and greg rutkowski and alphonse mucha, hdr 4k, 8k"
+    })
+
+    messages.append({
+        "role": "user",
+        "content": "{}".format(message)
+    })
+        
+    res = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=messages
+    )
+    
+    print(res)
+    return res.choices[0].message.content
 
 def translateHU(message):
     res = openai.ChatCompletion.create(

@@ -6,29 +6,45 @@ from langchain.agents import initialize_agent, Tool, AgentType
 from langchain.chat_models import ChatOpenAI
 from langchain.callbacks import get_openai_callback
 from langchain.schema import SystemMessage
+from langchain.tools import StructuredTool
 from gpt import getQuestion, translateHU, generatePrompt, generateSystemPrompt
 
+import asyncio
+
 from lchain import bor_power_mode
-
-llm = ChatOpenAI(temperature=1, model="gpt-3.5-turbo-0613")
-tools = [
-    Tool(
-        name="internet-search",
-        func=bor_power_mode,
-        description="Lehetővé teszi az interneten való keresést. Időjárást vagy egyéb valós idejű információkat is megtud keresni. A bemenet egy keresési kifejezés."
-    )
-]
-
-agent_kwargs = {
-    "system_message": SystemMessage(content=generateSystemPrompt()),
-}
-bor = initialize_agent(llm=llm, tools=tools, agent=AgentType.OPENAI_MULTI_FUNCTIONS, agent_kwargs=agent_kwargs, verbose=True)
 
 class ChatModule():
     errorMessages = ['Hmm... 🤔', 'Hát figyelj én nem tudom', 'Fogalmam sincs mit akarsz', 'Mivan?', 'Bruh', '💀', 'lol', 'Tesó mi lenne ha nem?', '🤡', 'Bocs én ezt nem', 'Nekem elveim is vannak azért', 'Nézd... ez nem működik', 'Mi lenne ha csak barátokként folytatnánk?', "Sprechen sie deutsch?", 'Megtudnád ismételni?', 'Nem értem', 'Szerintem ezt ne is próbáld meg újra', 'Anyád tudja hogy miket művelsz itt?']
     
-    def __init__(self, bot):
+    def __init__(self, bot, modules):
         self.bot = bot
+        self.modules = modules
+        llm = ChatOpenAI(temperature=1, model="gpt-3.5-turbo-0613")
+        tools = [
+            Tool(
+                name="internet-search",
+                func=bor_power_mode,
+                description="Lehetővé teszi az interneten való keresést. Időjárást vagy egyéb valós idejű információkat is megtud keresni. A bemenet egy keresési kifejezés."
+            ),
+            Tool(
+                name="image-generation",
+                func=self.imageGenerationTask,
+                description="Generál egy képet a megadott prompt alapján. A bemenet egy prompt és egy opciók JSON objektum ami a következőket tartalmazza: Size:Tupple(2):Int, Anime:Bool. A Size a kép méretét adja meg, az Anime pedig, hogy anime stílusban készüljön-e el a kép."
+            )
+        ]
+
+        agent_kwargs = {
+            "system_message": SystemMessage(content=generateSystemPrompt()),
+        }
+        self.bor = initialize_agent(llm=llm, tools=tools, agent=AgentType.OPENAI_MULTI_FUNCTIONS, agent_kwargs=agent_kwargs, verbose=True)
+
+        
+    def imageGenerationTask(self, message):
+        try:
+            asyncio.create_task(self.modules['imgprompt'].generateImage(message))
+            return "A kép hamarosan elkészül... Tájékoztasd a felhasználód arról, hogy a kép hamarosan elkészül."
+        except Exception as e:
+            return f"Hiba történt a kép generálása közben: {e}"
         
     async def messageLogic(self, message):
         try:
@@ -41,6 +57,8 @@ class ChatModule():
                     answerable_reference = True
                     
             if ('Bor' in message.content or answerable_reference) and message.channel.name != 'Bor Change Log':
+                await self.modules['imgprompt'].changeChannel(message.channel)
+                
                 async with message.channel.typing():
                     with get_openai_callback() as callback:
                         question = message.content
@@ -49,7 +67,7 @@ class ChatModule():
                             cprint(f"Reference message: {ref_msg.content}", 'light_yellow')
                         cprint(f"Question: {question}", 'yellow')
                         
-                        answer = bor.run(f'"{ref_msg.content}"\n\n{question}') if answerable_reference else bor.run(question)
+                        answer = self.bor.run(f'"{ref_msg.content}"\n\n{question}') if answerable_reference else self.bor.run(question)
                         
                         await self.sendChat(message, answer)
                         
