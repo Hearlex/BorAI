@@ -10,6 +10,7 @@ from langchain.tools import StructuredTool
 from gpt import getQuestion, translateHU, generatePrompt, generateSystemPrompt
 
 import asyncio
+import re
 
 from lchain import bor_power_mode
 
@@ -55,8 +56,11 @@ class ChatModule():
                 ref_msg = await message.channel.fetch_message(message.reference.message_id)
                 if ref_msg.author.id == self.bot.user.id:
                     answerable_reference = True
+
+            channel_blacklist = ['Bor Change Log']
+            match = re.search('Bor([.,:$!? ]|$)', message.content)
                     
-            if ('Bor' in message.content or answerable_reference) and message.channel.name != 'Bor Change Log':
+            if (message != None or answerable_reference) and message.channel.name not in channel_blacklist:
                 await self.modules['imgprompt'].changeChannel(message.channel)
                 
                 async with message.channel.typing():
