@@ -14,7 +14,7 @@ import asyncio
 from lchain import bor_power_mode
 
 class ChatModule():
-    errorMessages = ['Hmm... 🤔', 'Hát figyelj én nem tudom', 'Fogalmam sincs mit akarsz', 'Mivan?', 'Bruh', '💀', 'lol', 'Tesó mi lenne ha nem?', '🤡', 'Bocs én ezt nem', 'Nekem elveim is vannak azért', 'Nézd... ez nem működik', 'Mi lenne ha csak barátokként folytatnánk?', "Sprechen sie deutsch?", 'Megtudnád ismételni?', 'Nem értem', 'Szerintem ezt ne is próbáld meg újra', 'Anyád tudja hogy miket művelsz itt?']
+    errorMessages = ['Hmm... 🤔', 'Hát figyelj én nem tudom', 'Fogalmam sincs mit akarsz', 'Mivan?', 'Bruh', '💀', 'lol', 'Tesó mi lenne ha nem?', '🤡', 'Bocs én ezt nem', 'Nekem elveim is vannak azért', 'Nézd... ez nem működik', 'Mi lenne ha csak barátokként folytatnánk?', "Sprechen sie deutsch?", 'Megtudnád ismételni?', 'Nem értem', 'Szerintem ezt ne is próbáld meg újra', 'Anyád tudja hogy miket művelsz itt?', 'Játsszuk azt, hogy én ezt most nem hallottam...']
     
     def __init__(self, bot, modules):
         self.bot = bot
@@ -83,5 +83,19 @@ class ChatModule():
             text = text[4:]
         elif text.startswith('Egy Pohár Bor:'):
             text = text[14:]
+        elif answer.startswith('**Bor:**'):
+            answer = answer[8:]
         await message.channel.send(text)
-            
+    
+    async def commandChat(self, command, channel, data=None):
+        command = f'Most egy programot fogsz futtatni, írd ki a program kimenetét, ahogy Bor válaszolna a parancsra. A parancs: {command} Hozzátartozó adat: {data}. Add vissza a kimenetet a következő üzenetben.'
+        answer = self.bor.run(command)
+        
+        if answer.startswith('Bor:'):
+            answer = answer[4:]
+        elif answer.startswith('Egy Pohár Bor:'):
+            answer = answer[14:]
+        elif answer.startswith('**Bor:**'):
+            answer = answer[8:]
+        
+        await channel.send(answer)

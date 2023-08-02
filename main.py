@@ -4,9 +4,10 @@ from dotenv import load_dotenv
 from chat import ChatModule
 import asyncio
 import random
-from img import ImgModule
+from modules.image.img import ImgModule
 import json
-from promptpicker import ImageGenerator
+from modules.image.promptpicker import ImageGenerator
+from modules.dnd.dnd import DnD
 
 load_dotenv()
 token = os.getenv('BOT_TOKEN')
@@ -20,6 +21,7 @@ async def on_ready():
     modules['img'] = ImgModule(bot)
     modules['imgprompt'] = ImageGenerator(bot, modules['img'])
     modules['chat'] = ChatModule(bot, modules)
+    modules['dnd'] = DnD(bot)
 
 @bot.listen('on_message')
 async def on_message(message):
@@ -42,5 +44,19 @@ async def createimage(ctx, prompt: discord.Option(str, description='the prompt f
     await ctx.respond(f'Generating Image with prompt: {prompt} and options: {jsonoptions}')
     imgPaths = await modules['img'].createImage(prompt, jsonoptions, ctx.message)
     
+@bot.command(description='Remind DnD Users to vote!')
+async def reminddnd(ctx):
+    channel = ctx.channel
+    await ctx.respond("Processing...")
+    answer = await modules['dnd'].show_liked()
+    print(answer)
+    answer = str(answer)
+    await channel.send(answer)
+
+@bot.command(description='Do something the command asks for')
+async def command(ctx, command: discord.Option(str, description='the command to run'), data: discord.Option(str, description='the data to run the command with', required=False)):
+    channel = ctx.channel
+    await ctx.respond(f'Running command: {command} with data: {data}', ephemeral=True)
+    await modules['chat'].commandChat(command, channel, data)
 
 bot.run(token)

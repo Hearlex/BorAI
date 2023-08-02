@@ -1,4 +1,4 @@
-from imggen import generateImage
+from modules.image.imggen import generateImage
 import os
 import discord
 
