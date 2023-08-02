@@ -87,8 +87,8 @@ class ChatModule():
             text = text[4:]
         elif text.startswith('Egy Pohár Bor:'):
             text = text[14:]
-        elif answer.startswith('**Bor:**'):
-            answer = answer[8:]
+        elif text.startswith('**Bor:**'):
+            text = text[8:]
         await message.channel.send(text)
     
     async def commandChat(self, command, channel, data=None):
