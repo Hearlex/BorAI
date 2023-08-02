@@ -48,7 +48,7 @@ async def createimage(ctx, prompt: discord.Option(str, description='the prompt f
 async def reminddnd(ctx):
     channel = ctx.channel
     await ctx.respond("Processing...")
-    answer = await modules['dnd'].show_liked()
+    answer = await modules['dnd'].show_likes()
     print(answer)
     answer = str(answer)
     await channel.send(answer)
