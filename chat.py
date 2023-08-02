@@ -60,7 +60,7 @@ class ChatModule():
             channel_blacklist = ['Bor Change Log']
             match = re.search('Bor([.,:$!? ]|$)', message.content)
                     
-            if (message != None or answerable_reference) and message.channel.name not in channel_blacklist:
+            if (match != None or answerable_reference) and message.channel.name not in channel_blacklist:
                 await self.modules['imgprompt'].changeChannel(message.channel)
                 
                 async with message.channel.typing():
