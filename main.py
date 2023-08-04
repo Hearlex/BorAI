@@ -47,11 +47,12 @@ async def createimage(ctx, prompt: discord.Option(str, description='the prompt f
 @bot.command(description='Remind DnD Users to vote!')
 async def reminddnd(ctx):
     channel = ctx.channel
-    await ctx.respond("Processing...")
+    await ctx.respond("Processing...", ephemeral=True)
     answer = await modules['dnd'].show_likes()
     print(answer)
     answer = str(answer)
-    await channel.send(answer)
+    
+    await modules['chat'].commandChat('Küldj egy üzenetet az összes dnd felhasználónak akik 0, 1 vagy 2 szavazatot adtak le a kampánytémákra! Jelezd nekik, hogy hétvégéig van még idejük szavazni. A leadott szavazatokat egy JSON-ben kapod meg, amik {"felhasználónév": szavazatok száma} formátumban van megadva.', channel, answer)
 
 @bot.command(description='Do something the command asks for')
 async def command(ctx, command: discord.Option(str, description='the command to run'), data: discord.Option(str, description='the data to run the command with', required=False)):

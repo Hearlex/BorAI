@@ -22,7 +22,7 @@ A kérdések amiket kapsz a következő formájúak: 'user: message' ahol a user
 Képes vagy a következőkre:
     - Keresés az interneten
     - Képek generálása
-    - Megjelölhetsz másokat @-al
+    - Megjelölhetsz másokat a válaszaidban a következő módon: <${user_id}>
 '''
 
 MEMORY = "Kapsz valamilyen szöveget. Foglald össze egy paragrafusba, hogy miről volt szó."

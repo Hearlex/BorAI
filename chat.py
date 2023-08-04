@@ -31,7 +31,12 @@ class ChatModule():
                 name="image-generation",
                 func=self.imageGenerationTask,
                 description="Generál egy képet a megadott prompt alapján. A bemenet egy prompt és egy opciók JSON objektum ami a következőket tartalmazza: Size:Tupple(2):Int, Anime:Bool. A Size a kép méretét adja meg, az Anime pedig, hogy anime stílusban készüljön-e el a kép."
-            )
+            ),
+            Tool(
+                name="get-user-id",
+                func=self.getUserID,
+                description="This tool returns the user id of the user with the given name. Useful for mentioning someone! The input is a single user name, if there are multiple users with the same name, call this tool multiple times! If there is no such user, it returns None."
+            ),
         ]
 
         agent_kwargs = {
@@ -92,7 +97,7 @@ class ChatModule():
         await message.channel.send(text)
     
     async def commandChat(self, command, channel, data=None):
-        command = f'Most egy programot fogsz futtatni, írd ki a program kimenetét, ahogy Bor válaszolna a parancsra. A parancs: {command} Hozzátartozó adat: {data}. Add vissza a kimenetet a következő üzenetben.'
+        command = f'Most egy programot fogsz futtatni, írd ki a program kimenetét, ahogy Bor válaszolna a parancsra. A parancs: {command} Extra adat (ha van): {data}. Add vissza a kimenetet a következő üzenetben.'
         answer = self.bor.run(command)
         
         if answer.startswith('Bor:'):
@@ -103,3 +108,10 @@ class ChatModule():
             answer = answer[8:]
         
         await channel.send(answer)
+        
+    def getUserID(self, username):
+        members = self.bot.get_all_members()
+        for member in members:
+            if member.display_name == username or member.name == username:
+                return member.id
+        return None
