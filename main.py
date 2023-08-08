@@ -29,7 +29,8 @@ async def on_message(message):
         if message.author == bot.user:
             return
 
-        #emoteTask = asyncio.create_task(self.emoteLogic(message))
+        if message.channel.id == 1138382043156316180:
+            emoteTask = asyncio.create_task(addVoteOptions(message))
         messageTask = asyncio.create_task(modules['chat'].messageLogic(message))
         
         await asyncio.gather(messageTask)
@@ -61,3 +62,7 @@ async def command(ctx, command: discord.Option(str, description='the command to 
     await modules['chat'].commandChat(command, channel, data)
 
 bot.run(token)
+
+async def addVoteOptions(message):
+    await message.add_reaction('👍')
+    await message.add_reaction('👎')
