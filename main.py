@@ -15,6 +15,10 @@ bot = discord.Bot(intents=discord.Intents.all())
 
 modules = {}
 
+async def addVoteOptions(message):
+    await message.add_reaction('👍')
+    await message.add_reaction('👎')
+
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
@@ -62,7 +66,3 @@ async def command(ctx, command: discord.Option(str, description='the command to 
     await modules['chat'].commandChat(command, channel, data)
 
 bot.run(token)
-
-async def addVoteOptions(message):
-    await message.add_reaction('👍')
-    await message.add_reaction('👎')
