@@ -28,19 +28,19 @@ class DnD:
     player_post = None
     
     classes = [
-        "Barbarian",
-        "Bard",
-        "Cleric",
-        "Druid",
-        "Fighter",
-        "Monk",
-        "Paladin",
-        "Ranger",
-        "Rogue",
-        "Sorcerer",
-        "Warlock",
-        "Wizard",
-        "Artificer"
+        "barbarian",
+        "bard",
+        "cleric",
+        "druid",
+        "fighter",
+        "monk",
+        "paladin",
+        "ranger",
+        "rogue",
+        "sorcerer",
+        "warlock",
+        "wizard",
+        "artificer"
     ]
     
     races = [
