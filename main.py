@@ -14,6 +14,7 @@ token = os.getenv('BOT_TOKEN')
 bot = discord.Bot(intents=discord.Intents.all())
 
 modules = {}
+server = None
 
 async def addVoteOptions(message):
     await message.add_reaction('👍')
@@ -21,11 +22,14 @@ async def addVoteOptions(message):
 
 @bot.event
 async def on_ready():
-    print(f'We have logged in as {bot.user}')
+    global modules, server
+      
     modules['img'] = ImgModule(bot)
     modules['imgprompt'] = ImageGenerator(bot, modules['img'])
     modules['chat'] = ChatModule(bot, modules)
     modules['dnd'] = DnD(bot)
+    server = await bot.fetch_guild(1084891853758935141)
+    print(f'We have logged in as {bot.user}')
 
 @bot.listen('on_message')
 async def on_message(message):
@@ -64,5 +68,25 @@ async def command(ctx, command: discord.Option(str, description='the command to 
     channel = ctx.channel
     await ctx.respond(f'Running command: {command} with data: {data}', ephemeral=True)
     await modules['chat'].commandChat(command, channel, data)
+    
+dndgroup = bot.create_group('dnd', 'DnD Commands')
+
+@dndgroup.command(description='Create a new DnD Character')
+@discord.ext.commands.has_role('DnD')
+async def createcharacter(ctx,
+        character_name: discord.Option(str, description='the name of the character'),
+        character_race: discord.Option(str, description='the race of the character'),
+        character_class: discord.Option(str, description='the class of the character')
+    ):
+    
+    if character_class not in modules['dnd'].classes:
+        await ctx.respond(f'Invalid class: {character_class}', ephemeral=True)
+        return
+    if character_race not in modules['dnd'].races:
+        await ctx.respond(f'Invalid Race: {character_race}', ephemeral=True)
+        return
+    
+    await ctx.respond(f'Creating character with name: {character_name}, race: {character_race}, class: {character_class}', ephemeral=True)
+    modules['dnd'].create_player(ctx.author , character_name=character_name, character_race=character_race, character_class=character_class)
 
 bot.run(token)
