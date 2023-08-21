@@ -133,7 +133,7 @@ class DnD:
         embed.add_field(name="Játékosok és karaktereik", value=names, inline=True)
 
         if p_id:
-            self.player_post = await self.stats_channel.fetch_message(id)
+            self.player_post = await self.stats_channel.fetch_message(p_id)
             await self.player_post.edit(embed=embed)
         else:
             msg = await self.stats_channel.send(embed=embed)
