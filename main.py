@@ -1,3 +1,4 @@
+import datetime
 import discord
 import os
 from dotenv import load_dotenv
@@ -123,12 +124,19 @@ async def createmission(ctx,
         difficulty: discord.Option(str, description='the difficulty of the mission'),
         reward: discord.Option(str, description='the reward of the mission'),
         location: discord.Option(str, description='the location of the mission', required=False),
-        time: discord.Option(int, description='the time of the mission', required=False),
+        time: discord.Option(str, description='the time of the mission', required=False),
         player_range: discord.Option(str, description='the range of players for the mission', required=False),
     ):
     try:
-        player_range = player_range.split('-')
-        player_range = (int(player_range[0]), int(player_range[1]))
+        if player_range:
+            player_range = player_range.split('-')
+            player_range = (int(player_range[0]), int(player_range[1]))
+            
+        if time:
+            # Check if time is valid
+            time = datetime.datetime.strptime(time, "%Y-%m-%d")
+            time = time.strftime("%Y-%m-%d")
+            
         await ctx.respond(f'Creating mission with name: {name}, description: {description}, type: {type}, difficulty: {difficulty}, reward: {reward}, location: {location}, time: {time}', ephemeral=True)
         await modules['dnd'].post_mission(name, description, type, difficulty, reward,  location, time, player_range)
     except Exception as e:
@@ -143,13 +151,19 @@ async def modifymission(ctx,
         difficulty: discord.Option(str, description='the difficulty of the mission', required=False),
         reward: discord.Option(str, description='the reward of the mission', required=False),
         location: discord.Option(str, description='the location of the mission', required=False),
-        time: discord.Option(int, description='the time of the mission', required=False),
+        time: discord.Option(str, description='the time of the mission', required=False),
         player_range: discord.Option(str, description='the range of players for the mission', required=False),
     ):
     try:
         if player_range:
             player_range = player_range.split('-')
             player_range = (int(player_range[0]), int(player_range[1]))
+            
+        if time:
+            # Check if time is valid
+            time = datetime.datetime.strptime(time, "%Y-%m-%d")
+            time = time.strftime("%Y-%m-%d")
+            
         await ctx.respond(f'Modifying mission with name: {name}, description: {description}, type: {type}, difficulty: {difficulty}, reward: {reward}, location: {location}, time: {time}', ephemeral=True)
         await modules['dnd'].update_mission(name, description, type, difficulty, reward, location, time, player_range)
     except Exception as e:
