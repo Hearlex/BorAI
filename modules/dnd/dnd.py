@@ -15,7 +15,7 @@ def convertNumberToLetter(number):
         number_of_letters = math.floor(math.log(number, letters_length)) + 1
     
     letters = ""
-    for i in range(number_of_letters):
+    for _ in range(number_of_letters):
         letters = string.ascii_uppercase[number % letters_length] + letters
         number = math.floor(number / letters_length) - 1
         
@@ -99,10 +99,10 @@ class DnD:
         
         psh = gc.open_by_key('1q0843eIrQ68MekWvj79BKddHagjVpPgkHwqop-tA58A')
         self.pws = psh.get_worksheet(0)
-        
-        i = 0
+           
         headers = self.ws.row_values(1)
         if not headers:
+            i = 0
             for attr in dir(Player):
                 if not attr.startswith("__"):
                     print(convertNumberToLetter(i), attr)
@@ -112,21 +112,27 @@ class DnD:
         self.update_users()
 
     async def update_player_post(self):
-        id = self.pws.get('B1').first()
-        if id:
-            id = int(id)
-            
-        names = ""
-        for user in self.users.values():
-            if user["Player"]:
-                names += f'{user["User"].display_name}\t-\t{user["Player"].character_name}\n'
-                
+        p_id = self.pws.get('B1').first()
+        if p_id:
+            p_id = int(p_id)
+
+        names = "\n".join(
+            f'{user["User"].display_name}\t-\t{user["Player"].character_name}'
+            for user in self.users.values()
+            if user["Player"]
+        )
         print(names)
-        
-        embed = discord.Embed(title="Játékos adatok", description="Ebben a listában találhattok hasznos információkat a regisztrált játékosokról!", colour=2899536, timestamp=datetime.datetime.utcnow())
+
+        embed = discord.Embed(
+            title="Játékos adatok",
+            description="Ebben a listában találhattok hasznos információkat a regisztrált játékosokról!",
+            colour=2899536,
+            timestamp=datetime.datetime.now(datetime.timezone.utc),
+        )
+
         embed.add_field(name="Játékosok és karaktereik", value=names, inline=True)
-        
-        if id:
+
+        if p_id:
             self.player_post = await self.stats_channel.fetch_message(id)
             await self.player_post.edit(embed=embed)
         else:
@@ -138,8 +144,7 @@ class DnD:
         all_users = self.server.members
         for user in all_users:
             if self.role in user.roles:
-                namecell = self.ws.find(user.name)
-                if (namecell):
+                if namecell := self.ws.find(user.name):
                     row = namecell.row
                     col = namecell.col
                     player = Player()
@@ -154,8 +159,7 @@ class DnD:
                     self.users[user.id] = {"User": user, "Player": None}
     
     def update_player(self, user, player):
-        namecell = self.ws.find(user.name)
-        if (namecell):
+        if namecell := self.ws.find(user.name):
             row = namecell.row
             col = namecell.col
             for attr in dir(player):
@@ -163,8 +167,8 @@ class DnD:
                     print(attr, self.ws.cell(row, col).value)
                     self.ws.update_cell(row, col, getattr(player, attr))
                     col += 1
-        
-        
+
+
         self.update_player_post()
                     
     async def create_player(self, user, **kwargs):
@@ -192,10 +196,10 @@ class DnD:
         await self.update_player_post()
             
     def find_mission(self, name):
-        for thread in self.adventure_board.threads:
-            if thread.name == name:
-                return thread
-        return None
+        return next( #Returns next form iterator (aka first element) or None if there are no elements
+            (thread for thread in self.adventure_board.threads if thread.name == name),
+            None,
+        )
             
     async def post_mission(self, name, description, mission_type, difficulty, reward, location = None, time = None, player_range = (4,6)):
         mission = Mission(name=name, description=description, mission_type=mission_type, difficulty=difficulty, reward=reward, location=location, time=time, player_range=player_range)
@@ -203,24 +207,28 @@ class DnD:
     
     async def update_mission(self, name, description = None, mission_type = None, difficulty = None, reward = None, location = None, time = None, player_range = None):
         thread = self.find_mission(name)
-        if thread:
-            message = (await thread.history(limit=1,oldest_first=True).flatten())[0]
-            mission = Mission.from_embed(message.embeds[0])
-            if description: mission.description = description
-            if mission_type: mission.mission_type = mission_type
-            if difficulty: mission.difficulty = difficulty
-            if reward: mission.reward = reward
-            if location: mission.location = location
-            if time: mission.time = time
-            if player_range: mission.player_range = player_range
+
+        if not thread:
+            return
+        
+        message = (await thread.history(limit=1,oldest_first=True).flatten())[0]
+        mission = Mission.from_embed(message.embeds[0])
+        
+        if description: mission.description = description
+        if mission_type: mission.mission_type = mission_type
+        if difficulty: mission.difficulty = difficulty
+        if reward: mission.reward = reward
+        if location: mission.location = location
+        if time: mission.time = time
+        if player_range: mission.player_range = player_range
             
-            await message.edit(embed=mission.to_embed())
+        await message.edit(embed=mission.to_embed())
     
     def find_player(self, name):
-        for user in self.users.values():
-            if user["Player"] and user["Player"].Player_Name == name:
-                return user["Player"]
-        return None
+        return next(
+            (user["Player"] for user in self.users.values() if user["Player"] and user["Player"].Player_Name == name),
+            None
+        )
     
     async def join_mission(self, user, message):
         mission = Mission.from_embed(message.embeds[0])

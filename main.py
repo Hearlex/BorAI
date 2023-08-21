@@ -71,14 +71,17 @@ async def createcharacter(ctx,
         character_race: discord.Option(str, description='the race of the character'),
         character_class: discord.Option(str, description='the class of the character')
     ):
-    
-    if character_class not in modules['dnd'].classes:
+
+    low_class = character_class.lower()
+    low_race = character_race.lower()
+
+    if all(low_class not in c for c in modules['dnd'].classes):
         await ctx.respond(f'Invalid class: {character_class}', ephemeral=True)
         return
-    if character_race not in modules['dnd'].races:
+    if all(low_race not in r for r in modules['dnd'].races):
         await ctx.respond(f'Invalid Race: {character_race}', ephemeral=True)
         return
-    
+
     await ctx.respond(f'Creating character with name: {character_name}, race: {character_race}, class: {character_class}', ephemeral=True)
     await modules['dnd'].create_player(ctx.author , character_name=character_name, character_race=character_race, character_class=character_class)
 
@@ -90,9 +93,9 @@ async def join(ctx):
     try:
         join = await modules['dnd'].join_mission(ctx.author, message)
         if join:
-            await ctx.respond(f'Joined mission', ephemeral=True)
+            await ctx.respond('Joined mission', ephemeral=True)
         else:
-            await ctx.respond(f'Other players have played a long time ago, or you might already be on the list!', ephemeral=True)
+            await ctx.respond('Other players have played a long time ago, or you might already be on the list!', ephemeral=True)
     except Exception as e:
         await ctx.respond(f'Failed to join mission: {e}', ephemeral=True)
         raise e
@@ -105,9 +108,9 @@ async def leave(ctx):
     try:
         leave = await modules['dnd'].leave_mission(ctx.author, message)
         if leave:
-            await ctx.respond(f'Left mission', ephemeral=True)
+            await ctx.respond('Left mission', ephemeral=True)
         else:
-            await ctx.respond(f'Failed to leave mission', ephemeral=True)
+            await ctx.respond('Failed to leave mission', ephemeral=True)
     except Exception as e:
         await ctx.respond(f'Failed to leave mission: {e}', ephemeral=True)
 
@@ -125,7 +128,7 @@ async def createmission(ctx,
     ):
     try:
         player_range = player_range.split('-')
-        player_range = tuple((int(player_range[0]), int(player_range[1])))
+        player_range = (int(player_range[0]), int(player_range[1]))
         await ctx.respond(f'Creating mission with name: {name}, description: {description}, type: {type}, difficulty: {difficulty}, reward: {reward}, location: {location}, time: {time}', ephemeral=True)
         await modules['dnd'].post_mission(name, description, type, difficulty, reward,  location, time, player_range)
     except Exception as e:
@@ -146,7 +149,7 @@ async def modifymission(ctx,
     try:
         if player_range:
             player_range = player_range.split('-')
-            player_range = tuple((int(player_range[0]), int(player_range[1])))
+            player_range = (int(player_range[0]), int(player_range[1]))
         await ctx.respond(f'Modifying mission with name: {name}, description: {description}, type: {type}, difficulty: {difficulty}, reward: {reward}, location: {location}, time: {time}', ephemeral=True)
         await modules['dnd'].update_mission(name, description, type, difficulty, reward, location, time, player_range)
     except Exception as e:
