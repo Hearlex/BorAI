@@ -2,7 +2,7 @@ import discord
 import datetime
 
 class Mission:
-    def from_embed(self, embed):
+    def from_embed(embed):
         name = embed.title
         description = embed.description
         location = embed.fields[0].value
