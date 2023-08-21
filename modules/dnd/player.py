@@ -1,5 +1,3 @@
-
-
 class Player:
     Player_Name = ""
     character_name = ""

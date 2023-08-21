@@ -53,15 +53,6 @@ async def createimage(ctx, prompt: discord.Option(str, description='the prompt f
     await ctx.respond(f'Generating Image with prompt: {prompt} and options: {jsonoptions}')
     imgPaths = await modules['img'].createImage(prompt, jsonoptions, ctx.message)
     
-@bot.command(description='Remind DnD Users to vote!')
-async def reminddnd(ctx):
-    channel = ctx.channel
-    await ctx.respond("Processing...", ephemeral=True)
-    answer = await modules['dnd'].show_likes()
-    print(answer)
-    answer = str(answer)
-    
-    await modules['chat'].commandChat('Küldj egy üzenetet az összes dnd felhasználónak akik 0, 1 vagy 2 szavazatot adtak le a kampánytémákra! Jelezd nekik, hogy hétvégéig van még idejük szavazni. A leadott szavazatokat egy JSON-ben kapod meg, amik {"felhasználónév": szavazatok száma} formátumban van megadva.', channel, answer)
 
 @bot.command(description='Do something the command asks for')
 async def command(ctx, command: discord.Option(str, description='the command to run'), data: discord.Option(str, description='the data to run the command with', required=False)):
@@ -69,6 +60,8 @@ async def command(ctx, command: discord.Option(str, description='the command to 
     await ctx.respond(f'Running command: {command} with data: {data}', ephemeral=True)
     await modules['chat'].commandChat(command, channel, data)
     
+
+# DnD Commands
 dndgroup = bot.create_group('dnd', 'DnD Commands')
 
 @dndgroup.command(description='Create a new DnD Character')
@@ -87,6 +80,76 @@ async def createcharacter(ctx,
         return
     
     await ctx.respond(f'Creating character with name: {character_name}, race: {character_race}, class: {character_class}', ephemeral=True)
-    modules['dnd'].create_player(ctx.author , character_name=character_name, character_race=character_race, character_class=character_class)
+    await modules['dnd'].create_player(ctx.author , character_name=character_name, character_race=character_race, character_class=character_class)
+
+@dndgroup.command(description='Join a DnD Mission')
+@discord.ext.commands.has_role('DnD')
+async def join(ctx):
+    thread = ctx.channel
+    message = (await thread.history(limit=1,oldest_first=True).flatten())[0]
+    try:
+        join = await modules['dnd'].join_mission(ctx.author, message)
+        if join:
+            await ctx.respond(f'Joined mission', ephemeral=True)
+        else:
+            await ctx.respond(f'Other players have played a long time ago, or you might already be on the list!', ephemeral=True)
+    except Exception as e:
+        await ctx.respond(f'Failed to join mission: {e}', ephemeral=True)
+        raise e
+
+@dndgroup.command(description='Leave a DnD Mission')
+@discord.ext.commands.has_role('DnD')
+async def leave(ctx):
+    thread = ctx.channel
+    message = (await thread.history(limit=1,oldest_first=True).flatten())[0]
+    try:
+        leave = await modules['dnd'].leave_mission(ctx.author, message)
+        if leave:
+            await ctx.respond(f'Left mission', ephemeral=True)
+        else:
+            await ctx.respond(f'Failed to leave mission', ephemeral=True)
+    except Exception as e:
+        await ctx.respond(f'Failed to leave mission: {e}', ephemeral=True)
+
+@dndgroup.command(description='Create a new mission')
+@discord.ext.commands.has_role('Creator')
+async def createmission(ctx,
+        name: discord.Option(str, description='the name of the mission'),
+        description: discord.Option(str, description='the description of the mission'),
+        type: discord.Option(str, description='the type of the mission'),
+        difficulty: discord.Option(str, description='the difficulty of the mission'),
+        reward: discord.Option(str, description='the reward of the mission'),
+        location: discord.Option(str, description='the location of the mission', required=False),
+        time: discord.Option(int, description='the time of the mission', required=False),
+        player_range: discord.Option(str, description='the range of players for the mission', required=False),
+    ):
+    try:
+        player_range = player_range.split('-')
+        player_range = tuple((int(player_range[0]), int(player_range[1])))
+        await ctx.respond(f'Creating mission with name: {name}, description: {description}, type: {type}, difficulty: {difficulty}, reward: {reward}, location: {location}, time: {time}', ephemeral=True)
+        await modules['dnd'].post_mission(name, description, type, difficulty, reward,  location, time, player_range)
+    except Exception as e:
+        await ctx.respond(f'Failed to modify mission: {e}', ephemeral=True)
+
+@dndgroup.command(description='Modify a mission')
+@discord.ext.commands.has_role('Creator')
+async def modifymission(ctx,
+        name: discord.Option(str, description='the name of the mission'),
+        description: discord.Option(str, description='the description of the mission', required=False),
+        type: discord.Option(str, description='the type of the mission', required=False),
+        difficulty: discord.Option(str, description='the difficulty of the mission', required=False),
+        reward: discord.Option(str, description='the reward of the mission', required=False),
+        location: discord.Option(str, description='the location of the mission', required=False),
+        time: discord.Option(int, description='the time of the mission', required=False),
+        player_range: discord.Option(str, description='the range of players for the mission', required=False),
+    ):
+    try:
+        if player_range:
+            player_range = player_range.split('-')
+            player_range = tuple((int(player_range[0]), int(player_range[1])))
+        await ctx.respond(f'Modifying mission with name: {name}, description: {description}, type: {type}, difficulty: {difficulty}, reward: {reward}, location: {location}, time: {time}', ephemeral=True)
+        await modules['dnd'].update_mission(name, description, type, difficulty, reward, location, time, player_range)
+    except Exception as e:
+        await ctx.respond(f'Failed to modify mission: {e}', ephemeral=True)
 
 bot.run(token)
