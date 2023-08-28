@@ -40,7 +40,7 @@ class ChatModule():
             Tool(
                 name="roll-dice",
                 func=self.modules['dnd'].dice_roller.evalRoll,
-                description="This tool rolls a dice, never return dice rolls without this. The input is a string that contains the dice roll. The format can be any arithmetic expression using the following operators: '+','-','*','/','^','d'. Whitespaces are allowed as well. The output is the result of the roll."
+                description="This tool rolls a dice, never return dice rolls without this. The input is a string that contains the dice roll and often whitespaces. The format can be any arithmetic expression using the following operators: '+','-','*','/','^','d',' '. Only give part expressions, do seperate by operators. If there is no number before 'd' write 1! The output is the result of the roll."
             )
         ]
 

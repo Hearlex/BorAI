@@ -21,7 +21,7 @@ class DiceRoller:
         for c in text:
             if c == '(': op_db += 1
             elif c == ')': cl_db += 1
-            elif c not in [str(n) for n in range(10)] and c not in self.operators:
+            elif c not in [str(n) for n in range(10)] and c not in self.operators and c not in self.whitespace:
                 return False
 
         return op_db == cl_db 
@@ -31,12 +31,22 @@ class DiceRoller:
             text = text.replace(l, replace)
         return text
     
+    def roll(self, times, dice):
+        rolls = [int((self.rnd.random() * dice) + 1) for _ in range(times)]
+        print(rolls)
+        return sum(rolls)
+    
     def evalRoll(self, roll: str) -> int:
         if not self.checkValid(roll):
             return None
 
         roll = self.replaceWhitespace(roll, "").replace("^","**")
-        roll = re.sub("([0-9]+)d([0-9]+)",rf"sum([int(({self.rnd.random()} * \2) + 1) for _ in range(\1)])",roll)
+        print(roll)
+        roll = re.sub("([0-9]+)d([0-9]+)",r"self.roll(\1,\2)",roll)
+        roll = re.sub("d([0-9]+)",r"self.roll(1,\1)",roll)
+        
+        print(roll)
         ret = eval(roll)
+        print(ret)
 
-        return int(ret)
+        return ret
