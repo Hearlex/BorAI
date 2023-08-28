@@ -37,6 +37,11 @@ class ChatModule():
                 func=self.getUserID,
                 description="This tool returns the user id of the user with the given name. Useful for mentioning someone! The input is a single user name, if there are multiple users with the same name, call this tool multiple times! If there is no such user, it returns None."
             ),
+            Tool(
+                name="roll-dice",
+                func=self.modules['dnd'].dice_roller.evalRoll,
+                description="This tool rolls a dice, never return dice rolls without this. The input is a string that contains the dice roll. The format can be any arithmetic expression using the following operators: '+','-','*','/','^','d'. Whitespaces are allowed as well. The output is the result of the roll."
+            )
         ]
 
         agent_kwargs = {
