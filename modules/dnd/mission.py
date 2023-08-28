@@ -38,10 +38,10 @@ class Mission:
         self.time = time
         self.player_range = player_range
 
-        self.players = [] if players is None else players
-        self.spectators = [] if spectators is None else spectators
-        self.blacklist = [] if blacklist is None else blacklist
-        self.whitelist = [] if whitelist is None else whitelist
+        self.players = players
+        self.spectators = spectators
+        self.blacklist = blacklist
+        self.whitelist = whitelist
 
     def __str__(self):
         return f"**{self.name}**\n*{self.description}*\n\n**Location:** {self.location}\n**Difficulty:** {self.difficulty}\n**Reward:** {self.reward}\n**Time:** {self.time}\n**Type:** {self.type}\n**Player Range:** {self.player_range}\n**Players:** {self.players}\n**Spectators:** {self.spectators}\n**Blacklist:** {self.blacklist}\n**Whitelist:** {self.whitelist}"

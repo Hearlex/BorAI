@@ -6,6 +6,7 @@ import discord
 
 from modules.dnd.player import Player
 from modules.dnd.mission import Mission
+from modules.dnd.roll import DiceRoller
 
 def convertNumberToLetter(number):
     letters_length = len(string.ascii_uppercase)
@@ -28,6 +29,7 @@ class DnD:
     stats_channel = None
     player_post = None
     adventure_board = None
+    dice_roller = None
     
     classes = [
         "barbarian",
@@ -92,6 +94,7 @@ class DnD:
         self.role = self.server.get_role(1134772402820239370)
         self.stats_channel = self.server.get_channel(1142411553451290636)
         self.adventure_board = self.server.get_channel(1142473807492304937)
+        self.dice_roller = DiceRoller()
         
         gc = gspread.service_account(filename='service_account.json')
         sh = gc.open_by_key('14J14qZFMWu9-xNEPBQCJMyZr_waUvCGvzb7yQsXKnwg')
@@ -201,11 +204,13 @@ class DnD:
             None,
         )
             
-    async def post_mission(self, name, description, mission_type, difficulty, reward, location = None, time = None, player_range = (4,6)):
-        mission = Mission(name=name, description=description, mission_type=mission_type, difficulty=difficulty, reward=reward, location=location, time=time, player_range=player_range)
+    async def post_mission(self, name, description, mission_type, difficulty, reward, location = None, time = None, player_range = (4,6), blacklist = None, whitelist = None):
+        blacklist = blacklist.split(', ') if blacklist else []
+        whitelist = whitelist.split(', ') if whitelist else []
+        mission = Mission(name=name, description=description, mission_type=mission_type, difficulty=difficulty, reward=reward, location=location, time=time, player_range=player_range, blacklist=blacklist, whitelist=whitelist)
         await self.adventure_board.create_thread(name=name, embed=mission.to_embed())
     
-    async def update_mission(self, name, description = None, mission_type = None, difficulty = None, reward = None, location = None, time = None, player_range = None):
+    async def update_mission(self, name, description = None, mission_type = None, difficulty = None, reward = None, location = None, time = None, player_range = None, players = None, spectators = None, blacklist = None, whitelist = None):
         thread = self.find_mission(name)
 
         if not thread:
@@ -221,6 +226,10 @@ class DnD:
         if location: mission.location = location
         if time: mission.time = time
         if player_range: mission.player_range = player_range
+        if players: mission.players = players
+        if spectators: mission.spectators = spectators
+        if blacklist: mission.blacklist = blacklist
+        if whitelist: mission.whitelist = whitelist
             
         await message.edit(embed=mission.to_embed())
     
@@ -234,6 +243,9 @@ class DnD:
         mission = Mission.from_embed(message.embeds[0])
         max_players = mission.get_player_range()[1]
         players = mission.get_players()
+        time = datetime.datetime.strptime(mission.time, "%Y-%m-%d")
+        if time < datetime.datetime.now():
+            return False
         if len(players) >= max_players:
             lastPlayed = datetime.datetime.strptime(self.find_player(user.name).last_played, "%Y-%m-%d")
             lastPlayedPlayer = None
@@ -257,9 +269,30 @@ class DnD:
         await message.edit(embed=mission.to_embed())
         return True
     
+    async def end_mission(self, message):
+        mission = Mission.from_embed(message.embeds[0])
+        players = mission.get_players()
+        for player in players:
+            player = self.find_player(player)
+            player.games_played += 1
+            player.last_played = mission.time
+            self.update_player(player.Player_Name, player)
+    
     async def leave_mission(self, user, message):
         mission = Mission.from_embed(message.embeds[0])
         mission.remove_player(user.name)
+        await message.edit(embed=mission.to_embed())
+        return True
+    
+    async def spectate_mission(self, user, message):
+        mission = Mission.from_embed(message.embeds[0])
+        mission.add_spectator(user.name)
+        await message.edit(embed=mission.to_embed())
+        return True
+    
+    async def unspectate_mission(self, user, message):
+        mission = Mission.from_embed(message.embeds[0])
+        mission.remove_spectator(user.name)
         await message.edit(embed=mission.to_embed())
         return True
     

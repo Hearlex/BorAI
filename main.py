@@ -27,8 +27,8 @@ async def on_ready():
       
     modules['img'] = ImgModule(bot)
     modules['imgprompt'] = ImageGenerator(bot, modules['img'])
-    modules['chat'] = ChatModule(bot, modules)
     modules['dnd'] = DnD(bot)
+    modules['chat'] = ChatModule(bot, modules)
     server = await bot.fetch_guild(1084891853758935141)
     print(f'We have logged in as {bot.user}')
 
@@ -100,7 +100,7 @@ async def join(ctx):
         if join:
             await ctx.respond('Joined mission', ephemeral=True)
         else:
-            await ctx.respond('Other players have played a long time ago, or you might already be on the list!', ephemeral=True)
+            await ctx.respond('Sorry! You cannot join this game.', ephemeral=True)
     except Exception as e:
         await ctx.respond(f'Failed to join mission: {e}', ephemeral=True)
         raise e
@@ -118,6 +118,34 @@ async def leave(ctx):
             await ctx.respond('Failed to leave mission', ephemeral=True)
     except Exception as e:
         await ctx.respond(f'Failed to leave mission: {e}', ephemeral=True)
+
+@dndgroup.command(description='Spectate a DnD Mission')
+@discord.ext.commands.has_role('DnD')
+async def spectate(ctx):
+    thread = ctx.channel
+    message = (await thread.history(limit=1,oldest_first=True).flatten())[0]
+    try:
+        spectate = await modules['dnd'].spectate_mission(ctx.author, message)
+        if spectate:
+            await ctx.respond('Spectating mission', ephemeral=True)
+        else:
+            await ctx.respond('Sorry! You cannot spectate this game.', ephemeral=True)
+    except Exception as e:
+        await ctx.respond(f'Failed to spectate mission: {e}', ephemeral=True)
+
+@dndgroup.command(description='Unspectate a DnD Mission')
+@discord.ext.commands.has_role('DnD')
+async def unspectate(ctx):
+    thread = ctx.channel
+    message = (await thread.history(limit=1,oldest_first=True).flatten())[0]
+    try:
+        unspectate = await modules['dnd'].unspectate_mission(ctx.author, message)
+        if unspectate:
+            await ctx.respond('Unspectating mission', ephemeral=True)
+        else:
+            await ctx.respond('Failed to unspectate mission', ephemeral=True)
+    except Exception as e:
+        await ctx.respond(f'Failed to unspectate mission: {e}', ephemeral=True)
 
 @dndgroup.command(description='Create a new mission')
 @discord.ext.commands.has_role('Creator')
@@ -172,5 +200,16 @@ async def modifymission(ctx,
         await modules['dnd'].update_mission(name, description, type, difficulty, reward, location, time, player_range)
     except Exception as e:
         await ctx.respond(f'Failed to modify mission: {e}', ephemeral=True)
+
+@dndgroup.command(description='End a mission')
+@discord.ext.commands.has_role('Creator')
+async def endmission(ctx):
+    thread = ctx.channel
+    message = (await thread.history(limit=1,oldest_first=True).flatten())[0]
+    try:
+        await modules['dnd'].end_mission(message)
+        await ctx.respond('Ended mission', ephemeral=True)
+    except Exception as e:
+        await ctx.respond(f'Failed to end mission: {e}', ephemeral=True)
 
 bot.run(token)
