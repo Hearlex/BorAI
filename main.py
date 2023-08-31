@@ -197,6 +197,14 @@ async def modifymission(ctx,
         if player_range:
             player_range = player_range.split('-')
             player_range = (int(player_range[0]), int(player_range[1]))
+        if players:
+            players = players.split(', ')
+        if spectators:
+            spectators = spectators.split(', ')
+        if blacklist:
+            blacklist = blacklist.split(', ')
+        if whitelist:
+            whitelist = whitelist.split(', ')
             
         if time:
             # Check if time is valid
@@ -207,6 +215,7 @@ async def modifymission(ctx,
         await modules['dnd'].update_mission(name, description, type, difficulty, reward, location, time, player_range, players=players, spectators=spectators, blacklist=blacklist, whitelist=whitelist)
     except Exception as e:
         await ctx.respond(f'Failed to modify mission: {e}', ephemeral=True)
+        raise e
 
 @dndgroup.command(description='End a mission')
 @discord.ext.commands.has_role('Creator')

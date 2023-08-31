@@ -226,10 +226,10 @@ class DnD:
         if location: mission.location = location
         if time: mission.time = time
         if player_range: mission.player_range = player_range
-        if players: mission.players = players.split(', ')
-        if spectators: mission.spectators = spectators.split(', ')
-        if blacklist: mission.blacklist = blacklist.split(', ')
-        if whitelist: mission.whitelist = whitelist.split(', ')
+        if players: mission.players = players
+        if spectators: mission.spectators = spectators
+        if blacklist: mission.blacklist = blacklist
+        if whitelist: mission.whitelist = whitelist
             
         await message.edit(embed=mission.to_embed())
     
