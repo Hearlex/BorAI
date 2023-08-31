@@ -173,6 +173,7 @@ async def createmission(ctx,
         await modules['dnd'].post_mission(name, description, type, difficulty, reward,  location, time, player_range)
     except Exception as e:
         await ctx.respond(f'Failed to modify mission: {e}', ephemeral=True)
+        raise e
 
 @dndgroup.command(description='Modify a mission')
 @discord.ext.commands.has_role('Creator')
