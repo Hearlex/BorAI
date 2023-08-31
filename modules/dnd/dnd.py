@@ -274,7 +274,7 @@ class DnD:
         players = mission.get_players()
         for player in players:
             player = self.find_player(player)
-            player.games_played += 1
+            player.games_played = int(player.games_played) + 1
             player.last_played = mission.time
             self.update_player(player.Player_Name, player)
     
