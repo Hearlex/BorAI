@@ -112,10 +112,10 @@ class Mission:
         embed.add_field(name="Time", value=self.time, inline=True)
         embed.add_field(name="Type", value=self.type, inline=True)
         embed.add_field(name="Player Range", value=f"{self.player_range[0]}-{self.player_range[1]}", inline=True)
-        embed.add_field(name="Players", value=", ".join(list(self.players)), inline=True)
-        embed.add_field(name="Spectators", value=", ".join(list(self.spectators)), inline=True)
-        embed.add_field(name="Blacklist", value=", ".join(list(self.blacklist)), inline=True)
-        embed.add_field(name="Whitelist", value=", ".join(list(self.whitelist)), inline=True)
+        embed.add_field(name="Players", value=", ".join(self.players), inline=True)
+        embed.add_field(name="Spectators", value=", ".join(self.spectators), inline=True)
+        embed.add_field(name="Blacklist", value=", ".join(self.blacklist), inline=True)
+        embed.add_field(name="Whitelist", value=", ".join(self.whitelist), inline=True)
         return embed
 
 Mission.from_embed = staticmethod(Mission.from_embed)
