@@ -79,13 +79,15 @@ async def createcharacter(ctx,
     real_class = [cls for cls in modules['dnd'].classes if low_class in cls]
     real_race = [rc for rc in modules['dnd'].races if low_race in rc]
 
+    if low_race == "elf":
+        real_race = ["elf"]
+
     if len(real_class) != 1:
         await ctx.respond(f'Invalid class: {character_class}', ephemeral=True)
         return
     if len(real_race) != 1:
         await ctx.respond(f'Invalid race: {character_race}', ephemeral=True)
         return
-
 
     await ctx.respond(f'Creating character with name: {character_name}, race: {real_race[0]}, class: {real_class[0]}', ephemeral=True)
     await modules['dnd'].create_player(ctx.author , character_name=character_name, character_race=real_race[0], character_class=real_class[0])
