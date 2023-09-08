@@ -232,5 +232,17 @@ async def endmission(ctx,
         await modules['dnd'].end_mission(message, credits)
     except Exception as e:
         await ctx.respond(f'Failed to end mission: {e}', ephemeral=True)
+        
+@dndgroup.command(description='Update the player post')
+@discord.ext.commands.has_role('Creator')
+async def updateplayerpost(ctx):
+    await ctx.respond('Updating player post...', ephemeral=True)
+    await modules['dnd'].update_player_post()
+    
+@dndgroup.command(description='Update the shop post')
+@discord.ext.commands.has_role('Creator')
+async def updateshoppost(ctx):
+    await ctx.respond('Updating shop post...', ephemeral=True)
+    await modules['dnd'].update_shop_post()
 
 bot.run(token)

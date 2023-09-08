@@ -8,20 +8,8 @@ import asyncio
 from modules.dnd.player import Player
 from modules.dnd.mission import Mission
 from modules.dnd.roll import DiceRoller
-
-def convertNumberToLetter(number):
-    letters_length = len(string.ascii_uppercase)
-    
-    number_of_letters = 1
-    if number > 0:
-        number_of_letters = math.floor(math.log(number, letters_length)) + 1
-    
-    letters = ""
-    for _ in range(number_of_letters):
-        letters = string.ascii_uppercase[number % letters_length] + letters
-        number = math.floor(number / letters_length) - 1
-        
-    return letters
+from modules.dnd.shop import Shop
+from modules.helper import convertNumberToLetter
 
 class DnD:
     users = {}
@@ -31,6 +19,7 @@ class DnD:
     player_post = None
     adventure_board = None
     dice_roller = None
+    shop = None
     
     classes = [
         "barbarian",
@@ -98,6 +87,8 @@ class DnD:
         self.dice_roller = DiceRoller()
         
         gc = gspread.service_account(filename='service_account.json')
+        self.shop = Shop(self.stats_channel, gc)
+        
         sh = gc.open_by_key('14J14qZFMWu9-xNEPBQCJMyZr_waUvCGvzb7yQsXKnwg')
         self.ws = sh.get_worksheet(0)
         
@@ -115,6 +106,34 @@ class DnD:
         
         self.update_users()
 
+    async def update_shop_post(self):
+        await self.shop.update_list()
+        p_id = self.pws.get('B2').first()
+        if p_id:
+            p_id = int(p_id)
+            
+        items = "\n".join(
+            f'{item.name} -- {item.price} Kredit'
+            for item in self.shop.list_shop()
+        )
+        
+        embed = discord.Embed(
+            title="Bolt",
+            description="Az alábbi termékeket elérhetőek jelenleg a boltban!",
+            colour=5793266,
+            timestamp=datetime.datetime.now(datetime.timezone.utc),
+        )
+        
+        embed.set_image(url="https://i.imgur.com/2jGM4oT.png")
+        embed.add_field(name="Termékek", value=items, inline=True)
+        
+        if p_id:
+            self.shop_post = await self.stats_channel.fetch_message(p_id)
+            await self.shop_post.edit(embed=embed)
+        else:
+            msg = await self.stats_channel.send(embed=embed)
+            self.pws.update_cell(2, 2, str(msg.id))
+
     async def update_player_post(self):
         p_id = self.pws.get('B1').first()
         if p_id:
@@ -125,7 +144,6 @@ class DnD:
             for user in self.users.values()
             if user["Player"]
         )
-        print(names)
 
         embed = discord.Embed(
             title="Játékos adatok",
