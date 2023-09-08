@@ -103,7 +103,6 @@ async def join(ctx):
             await ctx.respond('Sorry! You cannot join this game.', ephemeral=True)
     except Exception as e:
         await ctx.respond(f'Failed to join mission: {e}', ephemeral=True)
-        raise e
 
 @dndgroup.command(description='Leave a DnD Mission')
 @discord.ext.commands.has_role('DnD')

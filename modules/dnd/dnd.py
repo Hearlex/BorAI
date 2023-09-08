@@ -161,8 +161,8 @@ class DnD:
                 else:
                     self.users[user.id] = {"User": user, "Player": None}
     
-    def update_player(self, user, player):
-        if namecell := self.ws.find(user.name):
+    async def update_player(self, username, player):
+        if namecell := self.ws.find(username):
             row = namecell.row
             col = namecell.col
             for attr in dir(player):
@@ -273,10 +273,10 @@ class DnD:
         mission = Mission.from_embed(message.embeds[0])
         players = mission.get_players()
         for player in players:
-            player = self.find_player(player)
-            player.games_played += 1
-            player.last_played = mission.time
-            self.update_player(player.Player_Name, player)
+            playerObject = self.find_player(player)
+            playerObject.games_played = int(playerObject.games_played) + 1
+            playerObject.last_played = mission.time
+            self.update_player(playerObject.Player_Name, playerObject)
     
     async def leave_mission(self, user, message):
         mission = Mission.from_embed(message.embeds[0])
