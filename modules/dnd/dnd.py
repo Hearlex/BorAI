@@ -3,6 +3,7 @@ import string
 import math
 import datetime
 import discord
+import asyncio
 
 from modules.dnd.player import Player
 from modules.dnd.mission import Mission
@@ -120,7 +121,7 @@ class DnD:
             p_id = int(p_id)
 
         names = "\n".join(
-            f'{user["User"].display_name}\t-\t{user["Player"].character_name}'
+            f'{user["User"].display_name}    -    {user["Player"].character_name}        Kreditek: {user["Player"].credits}'
             for user in self.users.values()
             if user["Player"]
         )
@@ -172,7 +173,7 @@ class DnD:
                     col += 1
 
 
-        self.update_player_post()
+        await self.update_player_post()
                     
     async def create_player(self, user, **kwargs):
         player = Player()
@@ -269,14 +270,24 @@ class DnD:
         await message.edit(embed=mission.to_embed())
         return True
     
-    async def end_mission(self, message):
+    async def end_mission(self, message, credits):
         mission = Mission.from_embed(message.embeds[0])
         players = mission.get_players()
+        
+        if credits:
+            credits = int(credits)
+        else:
+            credits = 0
+        
+        tasks = []
         for player in players:
             playerObject = self.find_player(player)
             playerObject.games_played = int(playerObject.games_played) + 1
             playerObject.last_played = mission.time
-            self.update_player(playerObject.Player_Name, playerObject)
+            playerObject.credits = int(playerObject.credits) + credits
+            tasks.append(asyncio.create_task(self.update_player(playerObject.Player_Name, playerObject)))
+        
+        await asyncio.gather(*tasks)
     
     async def leave_mission(self, user, message):
         mission = Mission.from_embed(message.embeds[0])

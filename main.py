@@ -30,6 +30,8 @@ async def on_ready():
     modules['dnd'] = DnD(bot)
     modules['chat'] = ChatModule(bot, modules)
     server = await bot.fetch_guild(1084891853758935141)
+    
+    await modules['dnd'].update_player_post()
     print(f'We have logged in as {bot.user}')
 
 @bot.listen('on_message')
@@ -220,12 +222,14 @@ async def modifymission(ctx,
 
 @dndgroup.command(description='End a mission')
 @discord.ext.commands.has_role('Creator')
-async def endmission(ctx):
+async def endmission(ctx,
+                     credits: discord.Option(int, description='the amount of credits to give to all player', required=False)
+                     ):
     thread = ctx.channel
     message = (await thread.history(limit=1,oldest_first=True).flatten())[0]
     try:
-        await modules['dnd'].end_mission(message)
-        await ctx.respond('Ended mission', ephemeral=True)
+        await ctx.respond('Ending mission...', ephemeral=True)
+        await modules['dnd'].end_mission(message, credits)
     except Exception as e:
         await ctx.respond(f'Failed to end mission: {e}', ephemeral=True)
 
