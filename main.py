@@ -79,13 +79,15 @@ async def createcharacter(ctx,
     real_class = [cls for cls in modules['dnd'].classes if low_class in cls]
     real_race = [rc for rc in modules['dnd'].races if low_race in rc]
 
+    if low_race == "elf":
+        real_race = ["elf"]
+
     if len(real_class) != 1:
         await ctx.respond(f'Invalid class: {character_class}', ephemeral=True)
         return
     if len(real_race) != 1:
         await ctx.respond(f'Invalid race: {character_race}', ephemeral=True)
         return
-
 
     await ctx.respond(f'Creating character with name: {character_name}, race: {real_race[0]}, class: {real_class[0]}', ephemeral=True)
     await modules['dnd'].create_player(ctx.author , character_name=character_name, character_race=real_race[0], character_class=real_class[0])
@@ -157,6 +159,8 @@ async def createmission(ctx,
         location: discord.Option(str, description='the location of the mission', required=False),
         time: discord.Option(str, description='the time of the mission', required=False),
         player_range: discord.Option(str, description='the range of players for the mission', required=False),
+        blacklist: discord.Option(str, description='the list of players who cannot join', required=False),
+        whitelist: discord.Option(str, description='the list of players who are able to join', required=False),
     ):
     try:
         if player_range:
@@ -169,9 +173,10 @@ async def createmission(ctx,
             time = time.strftime("%Y-%m-%d")
             
         await ctx.respond(f'Creating mission with name: {name}, description: {description}, type: {type}, difficulty: {difficulty}, reward: {reward}, location: {location}, time: {time}', ephemeral=True)
-        await modules['dnd'].post_mission(name, description, type, difficulty, reward,  location, time, player_range)
+        await modules['dnd'].post_mission(name, description, type, difficulty, reward,  location, time, player_range, blacklist, whitelist)
     except Exception as e:
         await ctx.respond(f'Failed to modify mission: {e}', ephemeral=True)
+        raise e
 
 @dndgroup.command(description='Modify a mission')
 @discord.ext.commands.has_role('Creator')
@@ -184,11 +189,23 @@ async def modifymission(ctx,
         location: discord.Option(str, description='the location of the mission', required=False),
         time: discord.Option(str, description='the time of the mission', required=False),
         player_range: discord.Option(str, description='the range of players for the mission', required=False),
+        players: discord.Option(str, description='the list of players', required=False),
+        spectators: discord.Option(str, description='the list of spectators', required=False),
+        blacklist: discord.Option(str, description='the list of players who cannot join', required=False),
+        whitelist: discord.Option(str, description='the list of players who are able to join', required=False),
     ):
     try:
         if player_range:
             player_range = player_range.split('-')
             player_range = (int(player_range[0]), int(player_range[1]))
+        if players:
+            players = players.split(', ')
+        if spectators:
+            spectators = spectators.split(', ')
+        if blacklist:
+            blacklist = blacklist.split(', ')
+        if whitelist:
+            whitelist = whitelist.split(', ')
             
         if time:
             # Check if time is valid
@@ -196,9 +213,10 @@ async def modifymission(ctx,
             time = time.strftime("%Y-%m-%d")
             
         await ctx.respond(f'Modifying mission with name: {name}, description: {description}, type: {type}, difficulty: {difficulty}, reward: {reward}, location: {location}, time: {time}', ephemeral=True)
-        await modules['dnd'].update_mission(name, description, type, difficulty, reward, location, time, player_range)
+        await modules['dnd'].update_mission(name, description, type, difficulty, reward, location, time, player_range, players=players, spectators=spectators, blacklist=blacklist, whitelist=whitelist)
     except Exception as e:
         await ctx.respond(f'Failed to modify mission: {e}', ephemeral=True)
+        raise e
 
 @dndgroup.command(description='End a mission')
 @discord.ext.commands.has_role('Creator')
