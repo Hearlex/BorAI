@@ -121,7 +121,7 @@ class DnD:
             p_id = int(p_id)
 
         names = "\n".join(
-            f'{user["User"].display_name}    -    {user["Player"].character_name}        Kreditek: {user["Player"].credits}'
+            f'{user["User"].display_name} ---- {user["Player"].character_name} -------- Kreditek: {user["Player"].credits}'
             for user in self.users.values()
             if user["Player"]
         )
