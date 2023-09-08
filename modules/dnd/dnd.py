@@ -327,3 +327,8 @@ class DnD:
     
     def get_users(self):
         return self.users
+    
+    async def change_player_credits(self, name, credits):
+        player = self.find_player(name)
+        player.credits = int(player.credits) + credits
+        await self.update_player(player.Player_Name, player)

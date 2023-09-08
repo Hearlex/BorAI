@@ -32,6 +32,7 @@ async def on_ready():
     server = await bot.fetch_guild(1084891853758935141)
     
     await modules['dnd'].update_player_post()
+    await modules['dnd'].update_shop_post()
     print(f'We have logged in as {bot.user}')
 
 @bot.listen('on_message')
@@ -244,5 +245,21 @@ async def updateplayerpost(ctx):
 async def updateshoppost(ctx):
     await ctx.respond('Updating shop post...', ephemeral=True)
     await modules['dnd'].update_shop_post()
+
+@dndgroup.command(description='Change the credits of a player by a certain amount')
+@discord.ext.commands.has_role('Creator')
+async def changeplayercredits(ctx,
+                                player: discord.Option(discord.Member, description='the player to change the credits of'),
+                                credits: discord.Option(int, description='the amount of credits to change by')
+                                ):
+    if modules['dnd'].role not in player.roles:
+        await ctx.respond(f'{player} is not a DnD player', ephemeral=True)
+        return
+    if [user for user in modules['dnd'].users.values() if user["Player"] and user["Player"].Player_Name == player.name] == []:
+        await ctx.respond(f'{player} does not have a character!', ephemeral=True)
+        return
+
+    await ctx.respond(f'Changing credits of {player} by {credits}', ephemeral=True)
+    await modules['dnd'].change_player_credits(player.name, credits)
 
 bot.run(token)
