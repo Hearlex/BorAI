@@ -262,9 +262,10 @@ class DnD:
         mission = Mission.from_embed(message.embeds[0])
         max_players = mission.get_player_range()[1]
         players = mission.get_players()
-        time = datetime.datetime.strptime(mission.time, "%Y-%m-%d")
-        if time < datetime.datetime.now():
-            return False
+        if mission.time: 
+            time = datetime.datetime.strptime(mission.time, "%Y-%m-%d")
+            if time < datetime.datetime.now():
+                return False
         if len(players) >= max_players:
             lastPlayed = datetime.datetime.strptime(self.find_player(user.name).last_played, "%Y-%m-%d")
             lastPlayedPlayer = None
