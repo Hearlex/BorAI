@@ -262,7 +262,7 @@ class DnD:
         mission = Mission.from_embed(message.embeds[0])
         max_players = mission.get_player_range()[1]
         players = mission.get_players()
-        if mission.time: 
+        if mission.time != "None": 
             time = datetime.datetime.strptime(mission.time, "%Y-%m-%d")
             if time < datetime.datetime.now():
                 return False
