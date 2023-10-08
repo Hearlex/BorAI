@@ -31,19 +31,26 @@ class DiceRoller:
             text = text.replace(l, replace)
         return text
     
-    def roll(self, times, dice):
-        rolls = [int((self.rnd.random() * dice) + 1) for _ in range(times)]
+    def roll(self, dice, advantage = 0): # -1 -> dis, 1 -> adv, 2 -> elven accuracy
+        rolls = [(self.rnd.random() * dice) + 1]
+        if abs(advantage) > 0: rolls.append((self.rnd.random() * dice) + 1)
+        if advantage > 1: rolls.append((self.rnd.random() * dice) + 1)
+
+        return min(rolls) if advantage < 0 else max(rolls)
+
+    def rollMany(self, times, dice, advantage=0): 
+        rolls = [self.roll(dice, advantage) for _ in range(times)]          
         print(rolls)
         return sum(rolls)
     
-    def evalRoll(self, roll: str) -> int:
+    def evalRoll(self, roll: str, advantage = 0) -> int:
         if not self.checkValid(roll):
             return None
 
         roll = self.replaceWhitespace(roll, "").replace("^","**")
         print(roll)
-        roll = re.sub("([0-9]+)d([0-9]+)",r"self.roll(\1,\2)",roll)
-        roll = re.sub("d([0-9]+)",r"self.roll(1,\1)",roll)
+        roll = re.sub("([0-9]+)d([0-9]+)",r"self.rollMany(\1,\2," + str(advantage) + ")",roll)
+        roll = re.sub("d([0-9]+)",r"self.roll(\1," + str(advantage) + ")",roll)
         
         print(roll)
         ret = eval(roll)

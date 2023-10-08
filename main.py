@@ -255,7 +255,7 @@ async def changeplayercredits(ctx,
     if modules['dnd'].role not in player.roles:
         await ctx.respond(f'{player} is not a DnD player', ephemeral=True)
         return
-    if [user for user in modules['dnd'].users.values() if user["Player"] and user["Player"].Player_Name == player.name] == []:
+    if not [user for user in modules['dnd'].users.values() if user["Player"] and user["Player"].Player_Name == player.name]:
         await ctx.respond(f'{player} does not have a character!', ephemeral=True)
         return
 

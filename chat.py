@@ -39,7 +39,7 @@ class ChatModule():
             ),
             Tool(
                 name="roll-dice",
-                func=self.modules['dnd'].dice_roller.evalRoll,
+                func=self.diceRollTask,
                 description="This tool rolls a dice, never return dice rolls without this. The input is a string that contains the dice roll and often whitespaces. The format can be any arithmetic expression using the following operators: '+','-','*','/','^','d',' '. Only give part expressions, do seperate by operators. If there is no number before 'd' write 1! The output is the result of the roll."
             )
         ]
@@ -49,7 +49,16 @@ class ChatModule():
         }
         self.bor = initialize_agent(llm=llm, tools=tools, agent=AgentType.OPENAI_MULTI_FUNCTIONS, agent_kwargs=agent_kwargs, verbose=True)
 
-        
+    def diceRollTask(self, message):
+        words = message.split(' ')
+
+        b_adv = "advantage" in words
+        b_dis = "disadvantage" in words
+        b_ea = "elven accuracy" in message
+
+        advantage = 1 if b_adv else 2 if b_ea else -1 if b_dis else 0
+        self.modules['dnd'].dice_roller.evalRoll(message, advantage)
+
     def imageGenerationTask(self, message):
         try:
             asyncio.create_task(self.modules['imgprompt'].generateImage(message))
