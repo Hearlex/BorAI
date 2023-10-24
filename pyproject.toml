@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "borai"
+version = "0.3.0"
+description = "Discord AI using the latest LLM tech"
+authors = ["Hegedüs Armand Alex <hearlex@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+py-cord = "^2.4.1"
+python-dotenv = "^1.0.0"
+pyautogen = "^0.1.13"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
