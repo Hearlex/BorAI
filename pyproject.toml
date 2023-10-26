@@ -10,6 +10,7 @@ python = "^3.10"
 py-cord = "^2.4.1"
 python-dotenv = "^1.0.0"
 pyautogen = "^0.1.13"
+geopy = "^2.4.0"
 
 
 [build-system]
