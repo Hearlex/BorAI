@@ -1,26 +1,20 @@
 from termcolor import cprint
-from lchain import bor_power_mode
 from error import MessageError
 
-from langchain.agents import initialize_agent, Tool, AgentType
-from langchain.chat_models import ChatOpenAI
-from langchain.callbacks import get_openai_callback
-from langchain.schema import SystemMessage
-from langchain.tools import StructuredTool
-from gpt import getQuestion, translateHU, generatePrompt, generateSystemPrompt
+#from gpt import getQuestion, translateHU, generatePrompt, generateSystemPrompt
 
 import asyncio
 import re
 
-from lchain import bor_power_mode
+#from lchain import bor_power_mode
 
 class ChatModule():
     errorMessages = ['Hmm... 🤔', 'Hát figyelj én nem tudom', 'Fogalmam sincs mit akarsz', 'Mivan?', 'Bruh', '💀', 'lol', 'Tesó mi lenne ha nem?', '🤡', 'Bocs én ezt nem', 'Nekem elveim is vannak azért', 'Nézd... ez nem működik', 'Mi lenne ha csak barátokként folytatnánk?', "Sprechen sie deutsch?", 'Megtudnád ismételni?', 'Nem értem', 'Szerintem ezt ne is próbáld meg újra', 'Anyád tudja hogy miket művelsz itt?', 'Játsszuk azt, hogy én ezt most nem hallottam...']
     
-    def __init__(self, bot, modules):
+    def __init__(self, bot, imgmodule):
         self.bot = bot
-        self.modules = modules
-        llm = ChatOpenAI(temperature=1, model="gpt-3.5-turbo-0613")
+        self.imgmodule = imgmodule
+        """ llm = ChatOpenAI(temperature=1, model="gpt-3.5-turbo-0613")
         tools = [
             Tool(
                 name="internet-search",
@@ -47,17 +41,26 @@ class ChatModule():
         agent_kwargs = {
             "system_message": SystemMessage(content=generateSystemPrompt()),
         }
-        self.bor = initialize_agent(llm=llm, tools=tools, agent=AgentType.OPENAI_MULTI_FUNCTIONS, agent_kwargs=agent_kwargs, verbose=True)
+        self.bor = initialize_agent(llm=llm, tools=tools, agent=AgentType.OPENAI_MULTI_FUNCTIONS, agent_kwargs=agent_kwargs, verbose=True) """
 
         
     def imageGenerationTask(self, message):
         try:
-            asyncio.create_task(self.modules['imgprompt'].generateImage(message))
+            asyncio.create_task(self.imgmodule.generateImage(message))
             return "A kép hamarosan elkészül... Tájékoztasd a felhasználód arról, hogy a kép hamarosan elkészül."
         except Exception as e:
             return f"Hiba történt a kép generálása közben: {e}"
         
-    async def messageLogic(self, message):
+    async def think_on_message(self, agents, channel, message):
+        proxy = agents.user_proxy
+        proxy.set_current_channel(channel)
+        if agents.user_proxy.waiting_for_reply:
+            agents.user_proxy.set_reply(message)
+        else:
+            await agents.user_proxy.a_initiate_chat(agents.bor, message=message)
+            #await proxy.a_send(message=message, recipient=agents.bor, request_reply=True)
+        
+    async def messageLogic(self, agents, message):
         try:
             answerable_reference = False
             ref_msg = None
@@ -71,35 +74,37 @@ class ChatModule():
             match = re.search('Bor([.,:$!? ]|$)', message.content)
                     
             if (match != None or answerable_reference) and message.channel.name not in channel_blacklist:
-                await self.modules['imgprompt'].changeChannel(message.channel)
+                await self.imgmodule.changeChannel(message.channel)
                 
                 async with message.channel.typing():
-                    with get_openai_callback() as callback:
+                    #with get_openai_callback() as callback:
                         question = message.content
                         
                         if answerable_reference:
                             cprint(f"Reference message: {ref_msg.content}", 'light_yellow')
                         cprint(f"Question: {question}", 'yellow')
                         
-                        answer = self.bor.run(f'"{ref_msg.content}"\n\n{question}') if answerable_reference else self.bor.run(question)
+                        answer = await self.think_on_message(agents, message.channel, f'"{ref_msg.author.name}: {ref_msg.content}"\n\n{message.author.name}: {question}') if answerable_reference else await self.think_on_message(agents, message.channel, f'{message.author.name}: {question}')
                         
-                        await self.sendChat(message, answer)
+                        #await self.sendChat(message, answer)
                         
-                    print(f"Total Tokens: {callback.total_tokens}")
-                    print(f"API call costs: ${callback.total_cost} - {callback.total_cost*340} Ft")
+                    # print(f"Total Tokens: {callback.total_tokens}")
+                    # print(f"API call costs: ${callback.total_cost} - {callback.total_cost*340} Ft")
                     
         except Exception as e:
             raise MessageError(e) from e
                             
     async def sendChat(self, message, text):
-        print('Sending chat')
+        return await self.sendChatToChannel(message.channel, text)
+        
+    async def sendChatToChannel(self, channel, text):
         if text.startswith('Bor:'):
             text = text[4:]
         elif text.startswith('Egy Pohár Bor:'):
             text = text[14:]
         elif text.startswith('**Bor:**'):
             text = text[8:]
-        await message.channel.send(text)
+        await channel.send(text)
     
     async def commandChat(self, command, channel, data=None):
         command = f'Most egy programot fogsz futtatni, írd ki a program kimenetét, ahogy Bor válaszolna a parancsra. A parancs: {command} Extra adat (ha van): {data}. Add vissza a kimenetet a következő üzenetben.'

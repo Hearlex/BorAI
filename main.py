@@ -10,8 +10,9 @@ from chat import ChatModule
 from modules.image.img import ImgModule
 from modules.image.promptpicker import ImageGenerator
 from modules.dnd.dnd import DnD
+from modules.agents.agentlogic import AgentLogic
+
 import commands
-global bot, modules
 
 load_dotenv()
 token = os.getenv('BOT_TOKEN')
@@ -22,12 +23,11 @@ server = None
 
 @bot.event
 async def on_ready():
-    global modules, server
-      
     modules['img'] = ImgModule(bot)
     modules['imgprompt'] = ImageGenerator(bot, modules['img'])
-    modules['dnd'] = DnD(bot)
-    modules['chat'] = ChatModule(bot, modules)
+    #modules['dnd'] = DnD(bot)
+    modules['chat'] = ChatModule(bot, modules['imgprompt'])
+    modules['agents'] = AgentLogic(modules['chat'])
     server = await bot.fetch_guild(1084891853758935141)
     print(f'We have logged in as {bot.user}')
 
@@ -39,7 +39,7 @@ async def on_message(message):
 
         #if message.channel.id == 1138382043156316180:
             #emoteTask = asyncio.create_task(addVoteOptions(Smessage))
-        messageTask = asyncio.create_task(modules['chat'].messageLogic(message))
+        messageTask = asyncio.create_task(modules['chat'].messageLogic(modules['agents'], message))
         
         await asyncio.gather(messageTask)
     except Exception as e:
@@ -47,5 +47,5 @@ async def on_message(message):
         await modules['chat'].sendChat(message, random.choice(modules['chat'].errorMessages))
 
 
-
+commands.create_commands(bot, modules)
 bot.run(token)

@@ -3,7 +3,7 @@ from discord.ext import pages, commands
 from discord.ui.input_text import InputText
 import asyncio
 
-from gpt import generateImagePrompt
+#from gpt import generateImagePrompt
 
 class PromptView(discord.ui.View):
         def __init__(self, prompt, message, imggen, timeout=180):
@@ -64,5 +64,5 @@ class ImageGenerator():
         self.channel = channel
     
     async def generateImage(self, message):
-        prompt = await generateImagePrompt(message)
+        prompt = message #await generateImagePrompt(message)
         await self.channel.send(f'Az következő promptot generáltam: {prompt}', view=PromptView(prompt, message, self.imggen))

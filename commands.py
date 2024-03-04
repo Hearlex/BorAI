@@ -2,9 +2,7 @@ import discord
 import json
 import datetime
 
-def create_commands():
-    global bot, modules
-
+def create_commands(bot, modules):
 
     @bot.command(description='generate an image')
     async def createimage(ctx, prompt: discord.Option(str, description='the prompt for the image'), options: discord.Option(str, description='the options for the image', required=False)):
@@ -188,5 +186,3 @@ def create_commands():
             await ctx.respond('Ended mission', ephemeral=True)
         except Exception as e:
             await ctx.respond(f'Failed to end mission: {e}', ephemeral=True)
-            
-create_commands()

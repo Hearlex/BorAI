@@ -1,16 +1,18 @@
 [tool.poetry]
-name = "borai"
+name = "BorAI"
 version = "0.3.0"
 description = "Discord AI using the latest LLM tech"
 authors = ["Hegedüs Armand Alex <hearlex@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-py-cord = "^2.4.1"
+python = "~3.10"
+py-cord = "2.5.0"
 python-dotenv = "^1.0.0"
-pyautogen = "^0.1.13"
+pyautogen = "^0.2.10"
 geopy = "^2.4.0"
+pymemgpt = "^0.3.0"
+gspread = "^6.0.2"
 
 
 [build-system]
