@@ -9,3 +9,5 @@ models/
 service_account.json
 OAI_CONFIG_LIST.json
 cache.db
+dist/
+poetry.lock
