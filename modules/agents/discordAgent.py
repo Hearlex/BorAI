@@ -6,6 +6,8 @@ import discord
 from termcolor import cprint
 from collections import defaultdict
 import warnings
+
+from autogen.coding.factory import CodeExecutorFactory
 from autogen.code_utils import content_str, decide_use_docker, check_can_use_docker_or_throw
 from autogen.oai import OpenAIWrapper
 
@@ -26,7 +28,7 @@ class DiscordAgent(ConversableAgent):
         # a dictionary of conversations, default value is list
         self._oai_messages = defaultdict(list)
         self._oai_system_message = [{"content": system_message, "role": "system"}]
-        self.description = description if description is not None else system_message
+        self._description = description if description is not None else system_message
         self._is_termination_msg = (
             is_termination_msg
             if is_termination_msg is not None
@@ -40,27 +42,17 @@ class DiscordAgent(ConversableAgent):
             self.llm_config = self.DEFAULT_CONFIG.copy()
             if isinstance(llm_config, dict):
                 self.llm_config.update(llm_config)
+            if "model" not in self.llm_config and (
+                not self.llm_config.get("config_list")
+                or any(not config.get("model") for config in self.llm_config["config_list"])
+            ):
+                raise ValueError(
+                    "Please either set llm_config to False, or specify a non-empty 'model' either in 'llm_config' or in each config of 'config_list'."
+                )
             self.client = OpenAIWrapper(**self.llm_config)
 
         # Initialize standalone client cache object.
         self.client_cache = None
-
-        if code_execution_config is None:
-            warnings.warn(
-                "Using None to signal a default code_execution_config is deprecated. "
-                "Use {} to use default or False to disable code execution.",
-                stacklevel=2,
-            )
-
-        self._code_execution_config: Union[Dict, Literal[False]] = (
-            {} if code_execution_config is None else code_execution_config
-        )
-
-        if isinstance(self._code_execution_config, dict):
-            use_docker = self._code_execution_config.get("use_docker", None)
-            use_docker = decide_use_docker(use_docker)
-            check_can_use_docker_or_throw(use_docker)
-            self._code_execution_config["use_docker"] = use_docker
 
         self.human_input_mode = human_input_mode
         self._max_consecutive_auto_reply = (
@@ -76,10 +68,43 @@ class DiscordAgent(ConversableAgent):
         self._default_auto_reply = default_auto_reply
         self._reply_func_list = []
         self._ignore_async_func_in_sync_chat_list = []
+        self._human_input = []
         self.reply_at_receive = defaultdict(bool)
         self.register_reply([Agent, None], DiscordAgent.generate_oai_reply)
         self.register_reply([Agent, None], DiscordAgent.a_generate_oai_reply, ignore_async_in_sync_chat=True)
-        self.register_reply([Agent, None], DiscordAgent.generate_code_execution_reply)
+
+        # Setting up code execution.
+        # Do not register code execution reply if code execution is disabled.
+        if code_execution_config is not False:
+            # If code_execution_config is None, set it to an empty dict.
+            if code_execution_config is None:
+                warnings.warn(
+                    "Using None to signal a default code_execution_config is deprecated. "
+                    "Use {} to use default or False to disable code execution.",
+                    stacklevel=2,
+                )
+                code_execution_config = {}
+            if not isinstance(code_execution_config, dict):
+                raise ValueError("code_execution_config must be a dict or False.")
+
+            # We have got a valid code_execution_config.
+            self._code_execution_config = code_execution_config
+
+            if self._code_execution_config.get("executor") is not None:
+                # Use the new code executor.
+                self._code_executor = CodeExecutorFactory.create(self._code_execution_config)
+                self.register_reply([Agent, None], DiscordAgent._generate_code_execution_reply_using_executor)
+            else:
+                # Legacy code execution using code_utils.
+                use_docker = self._code_execution_config.get("use_docker", None)
+                use_docker = decide_use_docker(use_docker)
+                check_can_use_docker_or_throw(use_docker)
+                self._code_execution_config["use_docker"] = use_docker
+                self.register_reply([Agent, None], DiscordAgent.generate_code_execution_reply)
+        else:
+            # Code execution is disabled.
+            self._code_execution_config = False
+
         self.register_reply([Agent, None], DiscordAgent.generate_tool_calls_reply)
         self.register_reply([Agent, None], DiscordAgent.a_generate_tool_calls_reply, ignore_async_in_sync_chat=True)
         self.register_reply([Agent, None], DiscordAgent.generate_function_call_reply)
@@ -93,7 +118,11 @@ class DiscordAgent(ConversableAgent):
 
         # Registered hooks are kept in lists, indexed by hookable method, to be called in their order of registration.
         # New hookable methods should be added to this list as required to support new agent capabilities.
-        self.hook_lists = {self.process_last_message: []}  # This is currently the only hookable method.
+        self.hook_lists = {
+            "process_last_received_message": [],
+            "process_all_messages_before_reply": [],
+            "process_message_before_send": [],
+        }
 
         
         
