@@ -11,8 +11,9 @@ py-cord = "2.5.0"
 python-dotenv = "^1.0.0"
 pyautogen = "^0.2.10"
 geopy = "^2.4.0"
-pymemgpt = "^0.3.0"
+pymemgpt = "0.3.5"
 gspread = "^6.0.2"
+llama-index-core = "^0.10.16.post1"
 
 
 [build-system]
