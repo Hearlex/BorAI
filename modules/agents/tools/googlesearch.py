@@ -1,7 +1,6 @@
 import requests
 from dotenv import load_dotenv
 import os
-from agentlogic import user_proxy, bor
 from typing_extensions import Annotated
 
 load_dotenv()
@@ -15,9 +14,7 @@ def get_important_info(results):
         important_info.append((title, link, snippet))
     return important_info
 
-@user_proxy.register_for_execution()
-@bor.register_for_llm(name="google_search", description="Search Google for a query.")
-def google_search(query, max_results=10):
+def google_search(query: Annotated[str, "The query to search with on google."], max_results: Annotated[int, "The maximum number of results to return."] = 10) -> Annotated[list, "A list of tuples containing the title, link and snippet of the search results."]:
     api_key = os.getenv("GOOGLE_API_KEY")
     cx_id = os.getenv("GOOGLE_CSE_ID")
     url = "https://www.googleapis.com/customsearch/v1"

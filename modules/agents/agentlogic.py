@@ -1,8 +1,9 @@
-from autogen import OpenAIWrapper, config_list_from_json, UserProxyAgent
 from memgpt.autogen.memgpt_agent import create_memgpt_autogen_agent_from_config, load_autogen_memgpt_agent
+from autogen import OpenAIWrapper, config_list_from_json, UserProxyAgent, agentchat
 import os
 
 from modules.agents.discordAgent import DiscordAgent
+from modules.agents.tools.googlesearch import google_search
 
 config_list = config_list_from_json(env_or_file="OAI_CONFIG_LIST.json")
 os.environ["OPENAI_API_KEY"] = config_list[0]["api_key"]
@@ -71,6 +72,8 @@ tools = {
     "google_search": google_search
 } """
 
+
+
 class AgentLogic():
     def __init__(self, chatModule):
         try:
@@ -94,8 +97,19 @@ class AgentLogic():
             name="user_proxy",
             human_input_mode="ALWAYS",
             max_consecutive_auto_reply=10,
-            code_execution_config={"work_dir": "coding"},
+            code_execution_config={"work_dir": "coding", "use_docker": False},
             chat=chatModule
+        )
+        
+        # Setting functions and tools
+        # Szóval érdekesség, úgy tűnik, hogy nem csak rengeteg szenvedés van a memgpt-vel, de a function callingot nem supportálják hiába közel fél éve kérték mások is
+        print(self.bor.llm_config)
+        agentchat.register_function(
+            google_search,
+            caller=self.bor,
+            executor=self.user_proxy,
+            name="google_search",
+            description="Search Google for a query.",
         )
 
 """ 
