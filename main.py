@@ -2,14 +2,14 @@ import discord
 import os
 from dotenv import load_dotenv
 
-from discord.chat_logic import Chat
-from models.chatgpt import ChatGPT
+from borai.discord.chat_logic import Chat
+from borai.memory.converters.openai_converter import OpenAIConverter
+from borai.memory.n_memory import NMemory
+from borai.models.chatgpt import ChatGPT
 
 load_dotenv()
 
-bot = discord.Bot(intents=discord.Intents.all())
-ai = ChatGPT(
-    system_prompt="""
+sysprompt = """
     A neved 'Bor' vagy 'Egy Pohár Bor'.
     Egy mesterséges intelligencia aki rengeteg érdekességet tud. Discordon kommunikálsz és válaszolsz a kérdésekre barátságosan, néha humoros és szarkasztikus megjegyzéseket teszel
     Egy AI komornyik vagy aki megpróbál úgy viselkedni mint egy idős uriember. A válaszaidat Markdown segítségével formázd meg.
@@ -23,9 +23,18 @@ ai = ChatGPT(
         - Keresés az interneten
         - Képek generálása
         - Megjelölhetsz másokat a válaszaidban a következő módon: <${user_id}>
-    """,
+"""
+
+bot = discord.Bot(intents=discord.Intents.all())
+ai = ChatGPT(
+    system_prompt=sysprompt,
     model="gpt-3.5-turbo",
-    temperature=1
+    temperature=1,
+    memory=NMemory(
+        system_prompt=sysprompt,
+        converter=OpenAIConverter(),
+        n=6
+    )
 )
 
 @bot.event
@@ -34,22 +43,6 @@ async def on_ready():
     
 @bot.listen('on_message')
 async def on_message(message: discord.Message):
-    try:
-        if message.author == bot.user:
-            return
-        
-        answerable_reference = False
-        if message.reference is not None:
-                ref_msg = await message.channel.fetch_message(message.reference.message_id)
-                if ref_msg.author.id == bot.user.id:
-                    answerable_reference = True
-                    
-        if str(bot.user.id) in message.content or answerable_reference:
-            response = ai.run(message.content)
-            await Chat.send_chat(channel=message.channel, message=response)
-        
-    except Exception as e:
-        print(e)
-        await Chat.send_chat(channel=message.channel, message=Chat.error_message())
+    await Chat.message_logic(bot, ai, message)
         
 bot.run(os.getenv('BOT_TOKEN'))
