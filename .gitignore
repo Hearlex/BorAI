@@ -5,7 +5,6 @@ sha.py
 .env
 test.py
 _old/
-models/
 service_account.json
 OAI_CONFIG_LIST.json
 cache.db
