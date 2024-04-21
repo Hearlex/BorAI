@@ -11,7 +11,7 @@ from autogen.coding.factory import CodeExecutorFactory
 from autogen.code_utils import content_str, decide_use_docker, check_can_use_docker_or_throw
 from autogen.oai import OpenAIWrapper
 
-from chat import ChatModule
+from modules.chat import ChatModule
 
 TIME_TO_WAIT_FOR_REPLY = 60
 

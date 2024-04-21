@@ -6,7 +6,7 @@ import asyncio
 import random
 import json
 
-from chat import ChatModule
+from modules.chat import ChatModule
 from modules.image.img import ImgModule
 from modules.image.promptpicker import ImageGenerator
 from modules.dnd.dnd import DnD
