@@ -30,14 +30,14 @@ def commands_from_tools(bot: discord.Bot):
         sign = inspect.signature(tool.run)
         params = [x for x in sign.parameters]
         print(f"Registering command for {tool.name}")
-        print(f"type: {type(tool.run)}")
-        print(f"Signature: {sign}")
-        print(f"Parameters: {params}")
+        #print(f"type: {type(tool.run)}")
+        #print(f"Signature: {sign}")
+        #print(f"Parameters: {params}")
         
         code = f"""
 @bot.command(name=tool.name, description=tool.description)
 async def command_function(ctx, {str(sign)[1:]}:
     await ctx.send(tools.tools[{index}].run({",".join(params)}))"""
             
-        print(code)
+        #print(code)
         exec(code, globals(), locals())
