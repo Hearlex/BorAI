@@ -1,8 +1,10 @@
 import discord
 import os
 from dotenv import load_dotenv
+from termcolor import cprint
 
 from borai.discord.chat_logic import Chat
+from borai.discord.commands_from_tools import commands_from_tools
 from borai.memory.converters.openai_converter import OpenAIConverter
 from borai.memory.n_memory import NMemory
 from borai.models.chatgpt import ChatGPT
@@ -48,11 +50,16 @@ async def on_ready():
             n=6
         )
     )
+    cprint("Bor is started", "green")
     
-    print(f'We have logged in as {bot.user}')
+    
+    cprint(f'We have logged in as {bot.user}', "green")
     
 @bot.listen('on_message')
 async def on_message(message: discord.Message):
     await Chat.message_logic(bot, ai, message)
         
+commands_from_tools(bot)
+cprint("Commands from tools are registered", "green")
+
 bot.run(os.getenv('BOT_TOKEN'))
