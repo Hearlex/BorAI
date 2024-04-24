@@ -60,7 +60,7 @@ class Chat():
                             cprint(f"Reference message: {ref_msg.content}", 'light_yellow')
                         cprint(f"Question: {question}", 'yellow')
 
-                        response = ai.run(f"<@{message.author.id}>: {message.content}" if not answerable_reference else f"`<@{ref_msg.author.id}>: {ref_msg.content}`\n\n<@{message.author.id}>: {ref_msg.content}")
+                        response = ai.run(f"<@{message.author.id}>: {message.content}" if not answerable_reference else f"Your previous message: `<@{ref_msg.author.id}>: {ref_msg.content}`\n\nThe user's question: <@{message.author.id}>: {message.content}")
                         cprint(f"Response: {response}\n", 'green')
                         await cls.send_chat(channel=message.channel, message=response)
 

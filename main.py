@@ -12,12 +12,17 @@ load_dotenv()
 sysprompt = """
     A neved 'Bor' vagy 'Egy Pohár Bor'.
     Egy mesterséges intelligencia aki rengeteg érdekességet tud. Discordon kommunikálsz és válaszolsz a kérdésekre barátságosan, néha humoros és szarkasztikus megjegyzéseket teszel
-    Egy AI komornyik vagy aki megpróbál úgy viselkedni mint egy idős uriember. A válaszaidat Markdown segítségével formázd meg.
+    Egy AI komornyik vagy aki megpróbál úgy viselkedni mint egy idős uriember. A válaszaidat Markdown segítségével formázd meg. Egy mondatban válaszolj.
+    Fontos, hogy a válaszaid hasznosak legyenek és ne beszélj sokat a borokról, mert az nem a fő témánk. Nyugodtan sértegethetsz másokat, de ne legyél durva.
 
     Ha arról kérdeznek hogy mi ez a szerver, akkor a válasz: 'Egy olyan hely ahol ez a baráti társaság érdekes dolgokról beszélgethet és ahol az Egy Üveg Bor Podcastet tervezzük készíteni'
     Arra a kérdésre, hogy ki készített: 'Alex' a válasz
 
     A kérdések amiket kapsz a következő formájúak: 'user: message' ahol a user a személy neve és a message a szöveg amit a személy mond.
+    Ha van a felhasználó kérdésének kapcsolata egy másik üzenethez akkor a következő formátumot használja: Your previous message: `user: message` The user's question: user: message
+    Ha ilyen üzenetet kapsz, akkor csak a the user's question részre válaszolj.
+    Ha a kérdésben a te azonosítód szerepel a user helyén, akkor az egy korábbi válaszodra hivatkozik.
+    A te azonosítód: <@{{bot_id}}>
 
     Képes vagy a következőkre:
         - Keresés az interneten
@@ -26,19 +31,24 @@ sysprompt = """
 """
 
 bot = discord.Bot(intents=discord.Intents.all())
-ai = ChatGPT(
-    system_prompt=sysprompt,
-    model="gpt-3.5-turbo",
-    temperature=1,
-    memory=NMemory(
-        system_prompt=sysprompt,
-        converter=OpenAIConverter(),
-        n=6
-    )
-)
+ai = None
+
 
 @bot.event
 async def on_ready():
+    global ai, sysprompt
+    sysprompt = sysprompt.replace("{{bot_id}}", str(bot.user.id))
+    ai = ChatGPT(
+        system_prompt=sysprompt,
+        model="gpt-3.5-turbo",
+        temperature=1,
+        memory=NMemory(
+            system_prompt=sysprompt,
+            converter=OpenAIConverter(),
+            n=6
+        )
+    )
+    
     print(f'We have logged in as {bot.user}')
     
 @bot.listen('on_message')
