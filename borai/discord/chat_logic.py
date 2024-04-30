@@ -50,7 +50,7 @@ class Chat():
                 if ref_msg.author.id == bot.user.id:
                     answerable_reference = True
 
-            channel_blacklist = ['Bor Change Log']
+            channel_blacklist = ['Bor Change Log', 'mesterséges-intelligencia', 'videójátékok']
                     
             if (str(bot.user.id) in message.content or answerable_reference) and message.channel.name not in channel_blacklist:
                 async with message.channel.typing():
