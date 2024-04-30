@@ -46,9 +46,12 @@ class Chat():
 
             answerable_reference = False
             if message.reference is not None:
-                ref_msg = await message.channel.fetch_message(message.reference.message_id)
-                if ref_msg.author.id == bot.user.id:
-                    answerable_reference = True
+                try:
+                    ref_msg = await message.channel.fetch_message(message.reference.message_id)
+                    if ref_msg.author.id == bot.user.id:
+                        answerable_reference = True
+                except discord.errors.NotFound:
+                    print("Message not found")
 
             channel_blacklist = ['Bor Change Log', 'mesterséges-intelligencia', 'videójátékok']
                     
