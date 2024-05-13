@@ -9,3 +9,7 @@ class AIInterface(ABC):
     @abstractmethod
     def run(self, prompt):
         pass
+    
+    @abstractmethod
+    def run_with_image(self, prompt, images):
+        pass

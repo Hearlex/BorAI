@@ -52,6 +52,12 @@ class Chat():
                         answerable_reference = True
                 except discord.errors.NotFound:
                     print("Message not found")
+                    
+            images = []
+            if len(message.attachments) > 0:
+                for attachment in message.attachments:
+                    if "image" in attachment.content_type:
+                        images.append(attachment.url)
 
             channel_blacklist = ['Bor Change Log', 'mesterséges-intelligencia', 'videójátékok']
                     
@@ -63,7 +69,12 @@ class Chat():
                             cprint(f"Reference message: {ref_msg.content}", 'light_yellow')
                         cprint(f"Question: {question}", 'yellow')
 
-                        response = ai.run(f"<@{message.author.id}>: {message.content}" if not answerable_reference else f"Your previous message: `<@{ref_msg.author.id}>: {ref_msg.content}`\n\nThe user's question: <@{message.author.id}>: {message.content}")
+                        prompt = f"<@{message.author.id}>: {message.content}" if not answerable_reference else f"Your previous message: `<@{ref_msg.author.id}>: {ref_msg.content}`\n\nThe user's question: <@{message.author.id}>: {message.content}"
+
+                        if len(images) > 0:
+                            response = ai.run_with_image(prompt, images)
+                        else:
+                            response = ai.run(prompt)
                         cprint(f"Response: {response}\n", 'green')
                         await cls.send_chat(channel=message.channel, message=response)
 

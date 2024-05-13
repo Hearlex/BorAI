@@ -42,7 +42,7 @@ async def on_ready():
     sysprompt = sysprompt.replace("{{bot_id}}", str(bot.user.id))
     ai = ChatGPT(
         system_prompt=sysprompt,
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         temperature=1,
         memory=NMemory(
             system_prompt=sysprompt,
