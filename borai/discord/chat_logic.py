@@ -48,8 +48,8 @@ class Chat():
             if message.reference is not None:
                 try:
                     ref_msg = await message.channel.fetch_message(message.reference.message_id)
-                    if ref_msg.author.id == bot.user.id:
-                        answerable_reference = True
+                    print(ref_msg.attachments)
+                    answerable_reference = True
                 except discord.errors.NotFound:
                     print("Message not found")
                     
@@ -58,6 +58,7 @@ class Chat():
                 for attachment in message.attachments:
                     if "image" in attachment.content_type:
                         images.append(attachment.url)
+                        
             if answerable_reference and len(ref_msg.attachments) > 0:
                 for attachment in ref_msg.attachments:
                     if "image" in attachment.content_type:
