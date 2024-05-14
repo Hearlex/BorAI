@@ -58,6 +58,10 @@ class Chat():
                 for attachment in message.attachments:
                     if "image" in attachment.content_type:
                         images.append(attachment.url)
+            if answerable_reference and len(ref_msg.attachments) > 0:
+                for attachment in ref_msg.attachments:
+                    if "image" in attachment.content_type:
+                        images.append(attachment.url)
 
             channel_blacklist = ['Bor Change Log', 'mesterséges-intelligencia', 'videójátékok']
                     
