@@ -8,6 +8,7 @@ from borai.discord.commands_from_tools import commands_from_tools
 from borai.memory.converters.openai_converter import OpenAIConverter
 from borai.memory.n_memory import NMemory
 from borai.models.chatgpt import ChatGPT
+from borai.tools import tools
 
 load_dotenv()
 
@@ -48,7 +49,8 @@ async def on_ready():
             system_prompt=sysprompt,
             converter=OpenAIConverter(),
             n=6
-        )
+        ),
+        tools=tools
     )
     cprint("Bor is started", "green")
     

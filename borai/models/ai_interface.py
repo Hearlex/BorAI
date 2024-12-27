@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 
 class AIInterface(ABC):
-    def __init__(self, system_prompt, memory=None):
+    def __init__(self, system_prompt, memory=None, tools=None):
         self.system_prompt = system_prompt
         self.latest_response = None
         self.memory = memory
+        self.tools = tools
         
     @abstractmethod
     def run(self, prompt):
