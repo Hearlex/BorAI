@@ -1,5 +1,4 @@
 import discord
-import os
 from dotenv import load_dotenv
 from termcolor import cprint
 
@@ -9,6 +8,7 @@ from borai.memory.converters.openai_converter import OpenAIConverter
 from borai.memory.n_memory import NMemory
 from borai.models.chatgpt import ChatGPT
 from borai.tools import tools
+from borai.misc.functions import getenv
 
 load_dotenv()
 
@@ -64,4 +64,4 @@ async def on_message(message: discord.Message):
 commands_from_tools(bot)
 cprint("Commands from tools are registered", "green")
 
-bot.run(os.getenv('BOT_TOKEN'))
+bot.run(getenv('BOT_TOKEN'))
