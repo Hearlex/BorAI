@@ -1,11 +1,11 @@
 import inspect
 import json
-import os
 from openai import OpenAI
 from termcolor import cprint
 
 from borai.memory.memory_base import MemoryBase
 from borai.models.ai_interface import AIInterface
+from borai.misc.functions import getenv
 
 class ChatGPT(AIInterface):
     def __init__(self, system_prompt, model="gpt-4o", temperature=0, memory: MemoryBase = None, tools=None):
@@ -13,7 +13,7 @@ class ChatGPT(AIInterface):
         
         # Initialize OpenAI client with API key from environment variables
         self.client = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY")
+            api_key=getenv("OPENAI_API_KEY")
         )
         # Set the model, temperature, and memory configurations
         self.model = model
